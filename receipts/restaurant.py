@@ -102,6 +102,14 @@ def erstelle_bon(drucker):
     drucker.set(bold=False)
     drucker.text(f"{'darin MwSt. 7%':<20} {mwst:>7.2f}€\n")
     drucker.text("─" * 32 + "\n")
+
+    gezahlt = _runden_auf_50ct(summe)
+    rueck   = gezahlt - summe
+    drucker.text(f"{'Gegeben (Bar)':<20} {gezahlt:>7.2f}€\n")
+    drucker.set(bold=True, double_height=True)
+    drucker.text(f"{'RUECKGELD':<16} {rueck:>7.2f}€\n")
+    drucker.set(bold=False, double_height=False)
+    drucker.text("─" * 32 + "\n")
     drucker.set(align="center")
     drucker.text("Zahlung: Bar\n\n")
     drucker.text("✦  Vielen Dank für Ihren Besuch!  ✦\n")
@@ -110,6 +118,10 @@ def erstelle_bon(drucker):
     drucker.text("\n")
     drucker.text(f"{LADEN_NAME}\n")
     drucker.cut()
+
+def _runden_auf_50ct(betrag):
+    import math
+    return math.ceil(betrag * 2) / 2
 
 def _kategorie_block(drucker, bestellung, kategorie, titel):
     namen = {n for n, _ in kategorie}
