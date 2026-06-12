@@ -1,4 +1,4 @@
-# LePetitCafe 🧾
+# Le Petit Café 🧾
 
 **A receipt printer for kids** — three big buttons, three play worlds, real thermal prints. No PC, no screen, no app needed.
 
@@ -189,7 +189,7 @@ sudo systemctl start lepetitcafe
 
 **Press a button → receipt comes out!** 🎉
 
-LePetitCafe now starts automatically every time the Pi is powered on.
+Le Petit Café now starts automatically every time the Pi is powered on.
 
 ---
 
@@ -231,7 +231,7 @@ sudo systemctl restart lepetitcafe
 python3 -c "
 from escpos.printer import Network
 p = Network('192.168.1.xxx')
-p.text('Hello from LePetitCafe!\n')
+p.text('Hello from Le Petit Café!\n')
 p.cut()
 p.close()
 print('Success!')
