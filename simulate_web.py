@@ -277,15 +277,34 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = 5000
-    server = HTTPServer(("", port), Handler)
-    url = f"http://localhost:{port}"
+    url  = f"http://localhost:{port}"
 
-    print(f"\n  LePetitCafe Simulator")
-    print(f"  ─────────────────────")
-    print(f"  {url}")
-    print(f"\n  Strg+C zum Beenden\n")
+    try:
+        server = HTTPServer(("", port), Handler)
+    except OSError:
+        print(f"\n  Port {port} ist bereits belegt.")
+        print(f"  Anderen Port angeben: python3 simulate_web.py 5001\n")
+        sys.exit(1)
 
-    threading.Timer(0.5, lambda: webbrowser.open(url)).start()
+    if len(sys.argv) > 1:
+        try:
+            port   = int(sys.argv[1])
+            url    = f"http://localhost:{port}"
+            server = HTTPServer(("", port), Handler)
+        except (ValueError, OSError) as e:
+            print(f"Fehler: {e}")
+            sys.exit(1)
+
+    print(f"\n  LePetitCafe Simulator läuft!")
+    print(f"  ════════════════════════════")
+    print(f"  Jetzt im Browser öffnen:")
+    print(f"\n      {url}\n")
+    print(f"  Strg+C zum Beenden\n")
+
+    try:
+        webbrowser.open(url)
+    except Exception:
+        pass
 
     try:
         server.serve_forever()

@@ -8,6 +8,22 @@ Ein Knopfdruck → sofort kommt ein echter, zufällig generierter Kassenbon aus 
 
 ---
 
+## Simulator (kein Hardware nötig)
+
+Bons ausprobieren bevor du Hardware kaufst — direkt im Browser:
+
+```bash
+git clone https://github.com/nuenni/lepetitcafe.git
+cd lepetitcafe
+python3 simulate_web.py
+```
+
+Öffnet automatisch **http://localhost:5000** — drei Knöpfe, echter Bon-Look, jeder Klick ein anderer Bon.
+
+> Port schon belegt? `python3 simulate_web.py 5001`
+
+---
+
 ## Wie es funktioniert
 
 ```
