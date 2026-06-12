@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>LePetitCafe – Bon-Vorschau</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #2b2b2b;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 40px;
+  }
+
+  h1 {
+    color: #eee;
+    font-family: 'Special Elite', serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  .receipts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+  }
+
+  /* ── Receipt shell ───────────────────────────────────────── */
+  .receipt {
+    width: 300px;
+    background: #faf6ee;
+    padding: 28px 22px 36px;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,.25),
+      0 10px 30px rgba(0,0,0,.35);
+    position: relative;
+    /* torn-paper top edge */
+    clip-path: polygon(
+      0% 0%, 3% 1.5%, 6% 0%, 9% 1.5%, 12% 0%,
+      15% 1.5%, 18% 0%, 21% 1.5%, 24% 0%,
+      27% 1.5%, 30% 0%, 33% 1.5%, 36% 0%,
+      39% 1.5%, 42% 0%, 45% 1.5%, 48% 0%,
+      51% 1.5%, 54% 0%, 57% 1.5%, 60% 0%,
+      63% 1.5%, 66% 0%, 69% 1.5%, 72% 0%,
+      75% 1.5%, 78% 0%, 81% 1.5%, 84% 0%,
+      87% 1.5%, 90% 0%, 93% 1.5%, 96% 0%,
+      99% 1.5%, 100% 0%,
+      100% 98%, 99% 100%, 97% 98%, 95% 100%,
+      93% 98%, 91% 100%, 89% 98%, 87% 100%,
+      85% 98%, 83% 100%, 81% 98%, 79% 100%,
+      77% 98%, 75% 100%, 73% 98%, 71% 100%,
+      69% 98%, 67% 100%, 65% 98%, 63% 100%,
+      61% 98%, 59% 100%, 57% 98%, 55% 100%,
+      53% 98%, 51% 100%, 49% 98%, 47% 100%,
+      45% 98%, 43% 100%, 41% 98%, 39% 100%,
+      37% 98%, 35% 100%, 33% 98%, 31% 100%,
+      29% 98%, 27% 100%, 25% 98%, 23% 100%,
+      21% 98%, 19% 100%, 17% 98%, 15% 100%,
+      13% 98%, 11% 100%, 9% 98%, 7% 100%,
+      5% 98%, 3% 100%, 1% 98%, 0% 100%
+    );
+  }
+
+  /* subtle paper texture overlay */
+  .receipt::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,.015) 3px,
+        rgba(0,0,0,.015) 4px
+      );
+    pointer-events: none;
+  }
+
+  /* ── Typography ─────────────────────────────────────────── */
+  .store-name {
+    font-family: 'Special Elite', serif;
+    font-size: 1.55rem;
+    text-align: center;
+    letter-spacing: 2px;
+    color: #111;
+    margin-bottom: 2px;
+  }
+
+  .store-slogan {
+    text-align: center;
+    font-size: .68rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .store-address {
+    text-align: center;
+    font-size: .65rem;
+    color: #888;
+    margin-bottom: 12px;
+  }
+
+  .receipt-meta {
+    font-size: .68rem;
+    color: #555;
+    margin-bottom: 2px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed #aaa;
+    margin: 10px 0;
+  }
+
+  .divider-solid {
+    border: none;
+    border-top: 1px solid #777;
+    margin: 10px 0;
+  }
+
+  .section-label {
+    font-size: .62rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #888;
+    margin: 8px 0 4px;
+  }
+
+  .line-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: .73rem;
+    color: #222;
+    margin-bottom: 2px;
+    gap: 6px;
+  }
+
+  .line-item .name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .line-item .dots {
+    flex: 1;
+    border-bottom: 1px dotted #aaa;
+    margin: 0 4px 3px;
+    min-width: 20px;
+  }
+
+  .line-item .price {
+    white-space: nowrap;
+    font-weight: 700;
+  }
+
+  .line-item .sub {
+    font-size: .62rem;
+    color: #888;
+    padding-left: 10px;
+    margin-top: -1px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #111;
+    margin-top: 4px;
+  }
+
+  .tax-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: .65rem;
+    color: #888;
+    margin-top: 2px;
+  }
+
+  .change-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: .78rem;
+    color: #444;
+    margin-top: 3px;
+  }
+
+  .bon-nr {
+    font-size: .62rem;
+    color: #999;
+    text-align: right;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .thank-you {
+    font-family: 'Special Elite', serif;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #222;
+    margin-top: 16px;
+  }
+
+  .footer-small {
+    text-align: center;
+    font-size: .6rem;
+    color: #aaa;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Barcode */
+  .barcode {
+    margin: 14px auto 0;
+    display: block;
+    width: 100%;
+    height: 40px;
+    background: repeating-linear-gradient(
+      90deg,
+      #111 0px, #111 2px,
+      transparent 2px, transparent 3px,
+      #111 3px, #111 4px,
+      transparent 4px, transparent 6px,
+      #111 6px, #111 7px,
+      transparent 7px, transparent 9px,
+      #111 9px, #111 11px,
+      transparent 11px, transparent 12px,
+      #111 12px, #111 13px,
+      transparent 13px, transparent 15px,
+      #111 15px, #111 16px,
+      transparent 16px, transparent 18px,
+      #111 18px, #111 21px,
+      transparent 21px, transparent 22px,
+      #111 22px, #111 23px,
+      transparent 23px, transparent 26px,
+      #111 26px, #111 28px,
+      transparent 28px, transparent 29px,
+      #111 29px, #111 30px,
+      transparent 30px, transparent 33px,
+      #111 33px, #111 35px,
+      transparent 35px, transparent 37px,
+      #111 37px, #111 39px,
+      transparent 39px, transparent 41px,
+      #111 41px, #111 42px,
+      transparent 42px, transparent 45px,
+      #111 45px, #111 47px,
+      transparent 47px, transparent 49px,
+      #111 49px, #111 50px
+    );
+    background-size: 50px 100%;
+  }
+
+  .barcode-num {
+    text-align: center;
+    font-size: .58rem;
+    color: #555;
+    letter-spacing: 4px;
+    margin-top: 3px;
+  }
+
+  /* Accent colors per receipt type */
+  .receipt-supermarkt .store-name { color: #c0392b; }
+  .receipt-eiscafe   .store-name { color: #8e44ad; }
+  .receipt-restaurant .store-name { color: #1a5276; }
+
+  .receipt-supermarkt .section-label { color: #c0392b; }
+  .receipt-eiscafe   .section-label { color: #8e44ad; }
+  .receipt-restaurant .section-label { color: #1a5276; }
+
+  /* Label badge below each receipt */
+  .label {
+    color: #fff;
+    font-family: 'Courier Prime', monospace;
+    font-size: .75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-top: 12px;
+  }
+  .label-supermarkt  { background: #c0392b; }
+  .label-eiscafe     { background: #8e44ad; }
+  .label-restaurant  { background: #1a5276; }
+</style>
+</head>
+<body>
+<h1>LePetitCafe · Bon-Vorschau</h1>
+
+<div class="receipts">
+
+  <!-- ══════════════════ SUPERMARKT ══════════════════ -->
+  <div>
+  <div class="receipt receipt-supermarkt">
+    <div class="bon-nr">BON-NR. 3817 &nbsp;|&nbsp; KASSE 2</div>
+
+    <div class="store-name">PETIT MARCHÉ</div>
+    <div class="store-slogan">Frisch. Lecker. Günstig.</div>
+    <div class="store-address">Hauptstr. 12 · 12345 Musterstadt · Tel. 01234/567890</div>
+
+    <hr class="divider">
+
+    <div class="receipt-meta">DATUM&nbsp;&nbsp;&nbsp;12.06.2026</div>
+    <div class="receipt-meta">UHRZEIT&nbsp;10:43 Uhr</div>
+    <div class="receipt-meta">KASSIERERIN: Sophie</div>
+
+    <hr class="divider">
+
+    <div class="section-label">Einkauf</div>
+
+    <div class="line-item">
+      <span class="name">Vollmilch 1L</span>
+      <span class="dots"></span>
+      <span class="price">0,89 €</span>
+    </div>
+    <div class="line-item sub"><span>(2 St.)</span></div>
+
+    <div class="line-item">
+      <span class="name">Butter 250g</span>
+      <span class="dots"></span>
+      <span class="price">1,49 €</span>
+    </div>
+    <div class="line-item sub"><span>(1 St.)</span></div>
+
+    <div class="line-item">
+      <span class="name">Äpfel Elstar</span>
+      <span class="dots"></span>
+      <span class="price">1,29 €</span>
+    </div>
+    <div class="line-item sub"><span>(1 kg)</span></div>
+
+    <div class="line-item">
+      <span class="name">Toastbrot</span>
+      <span class="dots"></span>
+      <span class="price">1,19 €</span>
+    </div>
+    <div class="line-item sub"><span>(1 Pck.)</span></div>
+
+    <div class="line-item">
+      <span class="name">Joghurt Erdbeere</span>
+      <span class="dots"></span>
+      <span class="price">1,10 €</span>
+    </div>
+    <div class="line-item sub"><span>(2 St.)</span></div>
+
+    <div class="line-item">
+      <span class="name">Schokolade Vollm.</span>
+      <span class="dots"></span>
+      <span class="price">0,99 €</span>
+    </div>
+    <div class="line-item sub"><span>(1 Tfl.)</span></div>
+
+    <hr class="divider-solid">
+
+    <div class="total-row">
+      <span>SUMME</span>
+      <span>6,95 €</span>
+    </div>
+    <div class="tax-row">
+      <span>darin MwSt. 19 %</span>
+      <span>1,10 €</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="change-row">
+      <span>Gegeben (Bar)</span>
+      <span>7,00 €</span>
+    </div>
+    <div class="change-row" style="font-weight:700; font-size:.85rem; color:#111;">
+      <span>RÜCKGELD</span>
+      <span>0,05 €</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="thank-you">Danke & Tschüss!</div>
+    <div class="footer-small">Auf Wiedersehen · Wir freuen uns auf Sie!</div>
+
+    <div class="barcode"></div>
+    <div class="barcode-num">3817 2606 1043 0002</div>
+  </div>
+  <div class="label label-supermarkt">🛒 Supermarkt</div>
+  </div>
+
+  <!-- ══════════════════ EISCAFÉ ══════════════════ -->
+  <div>
+  <div class="receipt receipt-eiscafe">
+    <div class="bon-nr">BON-NR. 042 &nbsp;|&nbsp; TISCH 4</div>
+
+    <div class="store-name">LE PETIT CAFÉ</div>
+    <div class="store-slogan">Eis · Waffeln · Träume</div>
+    <div class="store-address">Seepromenade 3 · 12345 Sonnenstadt</div>
+
+    <hr class="divider">
+
+    <div class="receipt-meta">DATUM&nbsp;&nbsp;&nbsp;12.06.2026</div>
+    <div class="receipt-meta">UHRZEIT&nbsp;14:17 Uhr</div>
+    <div class="receipt-meta">BEDIENUNG: Clara</div>
+
+    <hr class="divider">
+
+    <div class="section-label">Bestellung</div>
+
+    <div class="line-item">
+      <span class="name">Waffeleis (3 Kugeln)</span>
+      <span class="dots"></span>
+      <span class="price">3,40 €</span>
+    </div>
+    <div class="line-item sub"><span>(Vanille, Erdbeer, Schoko)</span></div>
+
+    <div class="line-item">
+      <span class="name">Eisbecher groß</span>
+      <span class="dots"></span>
+      <span class="price">5,50 €</span>
+    </div>
+    <div class="line-item sub"><span>(Pistazie, Karamell, Mango)</span></div>
+
+    <div class="line-item">
+      <span class="name">Spaghettieis</span>
+      <span class="dots"></span>
+      <span class="price">5,90 €</span>
+    </div>
+
+    <div class="line-item">
+      <span class="name">Kindereisbecher</span>
+      <span class="dots"></span>
+      <span class="price">3,20 €</span>
+    </div>
+    <div class="line-item sub"><span>(Bubblegum, Zitrone)</span></div>
+
+    <div class="line-item">
+      <span class="name">2x Limonade</span>
+      <span class="dots"></span>
+      <span class="price">5,00 €</span>
+    </div>
+
+    <hr class="divider-solid">
+
+    <div class="total-row">
+      <span>ZWISCHENSUMME</span>
+      <span>23,00 €</span>
+    </div>
+    <div class="tax-row">
+      <span>Trinkgeld 10 %</span>
+      <span>2,30 €</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="total-row">
+      <span>GESAMT</span>
+      <span>25,30 €</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="footer-small">ZAHLUNG: BAR</div>
+    <div class="thank-you">Merci beaucoup!</div>
+    <div class="footer-small">Wir wünschen einen wunderschönen Tag! ✿</div>
+
+    <div class="barcode"></div>
+    <div class="barcode-num">0042 1206 1417 0004</div>
+  </div>
+  <div class="label label-eiscafe">🍦 Eiscafé</div>
+  </div>
+
+  <!-- ══════════════════ RESTAURANT ══════════════════ -->
+  <div>
+  <div class="receipt receipt-restaurant">
+    <div class="bon-nr">BON-NR. 07 &nbsp;|&nbsp; TISCH 9 &nbsp;|&nbsp; 4 Pers.</div>
+
+    <div class="store-name">LE PETIT BISTRO</div>
+    <div class="store-slogan">Bon appétit!</div>
+    <div class="store-address">Marktplatz 7 · 12345 Genussstadt · www.lepetitbistro.de</div>
+
+    <hr class="divider">
+
+    <div class="receipt-meta">DATUM&nbsp;&nbsp;&nbsp;12.06.2026</div>
+    <div class="receipt-meta">UHRZEIT&nbsp;19:05 Uhr</div>
+    <div class="receipt-meta">KELLNER: Paul</div>
+
+    <hr class="divider">
+
+    <div class="section-label">Vorspeisen</div>
+
+    <div class="line-item">
+      <span class="name">Tomatensuppe</span>
+      <span class="dots"></span>
+      <span class="price">4,90 €</span>
+    </div>
+    <div class="line-item">
+      <span class="name">Gemischter Salat</span>
+      <span class="dots"></span>
+      <span class="price">5,90 €</span>
+    </div>
+
+    <div class="section-label">Hauptgerichte</div>
+
+    <div class="line-item">
+      <span class="name">Spaghetti Bolognese</span>
+      <span class="dots"></span>
+      <span class="price">9,90 €</span>
+    </div>
+    <div class="line-item">
+      <span class="name">Pizza Margherita</span>
+      <span class="dots"></span>
+      <span class="price">8,90 €</span>
+    </div>
+    <div class="line-item">
+      <span class="name">Kinderteller Nudeln</span>
+      <span class="dots"></span>
+      <span class="price">6,90 €</span>
+    </div>
+    <div class="line-item">
+      <span class="name">Schnitzel m. Pommes</span>
+      <span class="dots"></span>
+      <span class="price">12,90 €</span>
+    </div>
+
+    <div class="section-label">Desserts</div>
+
+    <div class="line-item">
+      <span class="name">Waffel m. Eis</span>
+      <span class="dots"></span>
+      <span class="price">5,50 €</span>
+    </div>
+    <div class="line-item">
+      <span class="name">Tiramisu</span>
+      <span class="dots"></span>
+      <span class="price">4,90 €</span>
+    </div>
+
+    <div class="section-label">Getränke</div>
+
+    <div class="line-item">
+      <span class="name">2x Apfelsaft</span>
+      <span class="dots"></span>
+      <span class="price">5,60 €</span>
+    </div>
+    <div class="line-item">
+      <span class="name">2x Wasser still 0,3L</span>
+      <span class="dots"></span>
+      <span class="price">3,80 €</span>
+    </div>
+
+    <hr class="divider-solid">
+
+    <div class="total-row">
+      <span>SUMME</span>
+      <span>69,20 €</span>
+    </div>
+    <div class="tax-row">
+      <span>darin MwSt. 7 %</span>
+      <span>4,52 €</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="footer-small">ZAHLUNG: BAR</div>
+    <div class="thank-you">Vielen Dank!</div>
+    <div class="footer-small">Wir freuen uns, Sie bald wieder zu sehen ✦</div>
+
+    <div class="barcode"></div>
+    <div class="barcode-num">0007 1206 1905 0009</div>
+  </div>
+  <div class="label label-restaurant">🍽️ Restaurant</div>
+  </div>
+
+</div><!-- .receipts -->
+</body>
+</html>
