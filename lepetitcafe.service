@@ -1,0 +1,17 @@
+[Unit]
+Description=LePetitCafe Kassenbon-Drucker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/LePetitCafe
+ExecStart=/usr/bin/python3 /home/pi/LePetitCafe/main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
