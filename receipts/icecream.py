@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
 
+from . import layout
+
 STORE_NAME = "THE LITTLE CAFÉ"
 SLOGAN     = "Ice Cream · Waffles · Dreams"
 
@@ -50,34 +52,34 @@ def erstelle_bon(printer):
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
     printer.set(align="center", bold=False, double_height=False, double_width=False)
-    printer.text("✿  " + SLOGAN + "  ✿\n")
-    printer.text("3 Lake Promenade · 12345 Sunnyville\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.wrapped("✿  " + SLOGAN + "  ✿"))
+    printer.text(layout.wrapped("3 Lake Promenade · 12345 Sunnyville"))
+    printer.text(layout.divider())
 
     printer.set(align="left")
     printer.text(f"Table:   {table:<4}  Receipt No.: {rec_no}\n")
     printer.text(f"Server:  {server}\n")
     printer.text(f"Time:    {now.strftime('%H:%M')}\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
 
     for name, price, qty in positions:
         total_pos = price * qty
-        printer.text(f"{qty}x {name[:22]}\n")
+        printer.text(layout.wrapped(f"{qty}x {name}"))
         printer.text(f"   {qty} x {price:.2f}€ = {total_pos:.2f}€\n")
         if "scoop" in name.lower() or "waffle" in name.lower() or "cup" in name.lower():
             scoops = random.sample(FLAVOURS, k=min(3, qty * 2))
-            printer.text(f"   ({', '.join(scoops)})\n")
+            printer.text(layout.wrapped(f"({', '.join(scoops)})", indent=3))
 
-    printer.text("═" * 32 + "\n")
+    printer.text(layout.divider("═"))
     printer.set(bold=True)
-    printer.text(f"{'Subtotal':<20} {subtotal:>7.2f}€\n")
+    printer.text(layout.row("Subtotal", layout.money(subtotal)))
     printer.set(bold=False)
     if tip_pct > 0:
-        printer.text(f"{'Tip ' + str(tip_pct) + '%':<20} {tip:>7.2f}€\n")
+        printer.text(layout.row(f"Tip {tip_pct}%", layout.money(tip)))
     printer.set(bold=True, double_height=True)
-    printer.text(f"{'TOTAL':<16} {total:>7.2f}€\n")
+    printer.text(layout.row("TOTAL", layout.money(total)))
     printer.set(bold=False, double_height=False)
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
     printer.set(align="center")
     printer.text("Payment: Cash\n")
     printer.text(f"{now.strftime('%d/%m/%Y')}\n")

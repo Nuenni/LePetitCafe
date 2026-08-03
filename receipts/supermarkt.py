@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
 
+from . import layout
+
 LADEN_NAME = "PETIT MARCHÉ"
 SLOGAN     = "Frisch. Lecker. Günstig."
 
@@ -52,35 +54,34 @@ def erstelle_bon(drucker):
     drucker.text(f"{SLOGAN}\n")
     drucker.text("Hauptstr. 12 · 12345 Musterstadt\n")
     drucker.text("Tel: 01234 / 567890\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
 
     drucker.set(align="left")
     drucker.text(f"Datum:  {now.strftime('%d.%m.%Y')}\n")
     drucker.text(f"Uhrzeit:{now.strftime('%H:%M')} Uhr\n")
     drucker.text(f"Kasse:  {kasse}   Bon-Nr.: {bonNr}\n")
     drucker.text(f"Kassierer/in: {name}\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
 
     for artikel, preis, menge in items:
-        zeile = f"{artikel[:20]:<20} {preis:>5.2f}€"
-        drucker.text(zeile + "\n")
+        drucker.text(layout.item(artikel, preis))
         drucker.text(f"  ({menge})\n")
 
-    drucker.text("═" * 32 + "\n")
+    drucker.text(layout.divider("═"))
     drucker.set(bold=True)
-    drucker.text(f"{'SUMME':<20} {summe:>7.2f}€\n")
+    drucker.text(layout.row("SUMME", layout.money(summe)))
     drucker.set(bold=False)
-    drucker.text(f"{'darin MwSt. 19%':<20} {mwst:>7.2f}€\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.row("darin MwSt. 19%", layout.money(mwst)))
+    drucker.text(layout.divider())
 
     gezahlt = _runden_auf_50ct(summe)
     rueck   = gezahlt - summe
-    drucker.text(f"{'Gegeben (Bar)':<20} {gezahlt:>7.2f}€\n")
+    drucker.text(layout.row("Gegeben (Bar)", layout.money(gezahlt)))
     drucker.set(bold=True, double_height=True)
-    drucker.text(f"{'RUECKGELD':<16} {rueck:>7.2f}€\n")
+    drucker.text(layout.row("RUECKGELD", layout.money(rueck)))
     drucker.set(bold=False, double_height=False)
 
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
     drucker.set(align="center")
     drucker.text(f"{random.choice(_sprueche())}\n")
     drucker.text("Vielen Dank für Ihren Einkauf!\n")

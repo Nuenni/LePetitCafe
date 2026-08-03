@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
 
+from . import layout
+
 STORE_NAME = "THE LITTLE MARKET"
 SLOGAN     = "Fresh. Tasty. Affordable."
 
@@ -52,33 +54,33 @@ def erstelle_bon(printer):
     printer.text(f"{SLOGAN}\n")
     printer.text("12 Main St · 12345 Pleasantville\n")
     printer.text("Tel: 01234 / 567890\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
 
     printer.set(align="left")
     printer.text(f"Date:    {now.strftime('%d/%m/%Y')}\n")
     printer.text(f"Time:    {now.strftime('%H:%M')}\n")
     printer.text(f"Till:    {till}   Receipt No.: {rec_no}\n")
     printer.text(f"Cashier: {name}\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
 
     for article, price, qty in items:
-        printer.text(f"{article[:20]:<20} {price:>5.2f}€\n")
+        printer.text(layout.item(article, price))
         printer.text(f"  ({qty})\n")
 
-    printer.text("═" * 32 + "\n")
+    printer.text(layout.divider("═"))
     printer.set(bold=True)
-    printer.text(f"{'TOTAL':<20} {total:>7.2f}€\n")
+    printer.text(layout.row("TOTAL", layout.money(total)))
     printer.set(bold=False)
-    printer.text(f"{'incl. VAT 19%':<20} {tax:>7.2f}€\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.row("incl. VAT 19%", layout.money(tax)))
+    printer.text(layout.divider())
 
     paid   = _round_up(total)
     change = paid - total
-    printer.text(f"{'Cash given':<20} {paid:>7.2f}€\n")
+    printer.text(layout.row("Cash given", layout.money(paid)))
     printer.set(bold=True, double_height=True)
-    printer.text(f"{'CHANGE':<16} {change:>7.2f}€\n")
+    printer.text(layout.row("CHANGE", layout.money(change)))
     printer.set(bold=False, double_height=False)
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
     printer.set(align="center")
     printer.text(f"{random.choice(_phrases())}\n")
     printer.text("Thank you for shopping with us!\n")

@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
 
+from . import layout
+
 LADEN_NAME = "LE PETIT BISTRO"
 SLOGAN     = "Bon appétit!"
 
@@ -81,14 +83,14 @@ def erstelle_bon(drucker):
     drucker.text(f"✦  {SLOGAN}  ✦\n")
     drucker.text("Marktplatz 7 · 12345 Genussstadt\n")
     drucker.text("www.lepetitbistro.de\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
 
     drucker.set(align="left")
     drucker.text(f"Tisch:     {tisch:<3}  Bon-Nr.: {bonNr:02d}\n")
     drucker.text(f"Personen:  {pers}\n")
     drucker.text(f"Kellner/in:{kellner}\n")
     drucker.text(f"Datum:     {now.strftime('%d.%m.%Y  %H:%M')} Uhr\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
 
     # Kategorien gruppiert ausgeben
     _kategorie_block(drucker, bestellung, VORSPEISEN,   "VORSPEISEN")
@@ -96,23 +98,23 @@ def erstelle_bon(drucker):
     _kategorie_block(drucker, bestellung, DESSERTS,      "DESSERTS")
     _kategorie_block(drucker, bestellung, GETRAENKE,     "GETRAENKE")
 
-    drucker.text("═" * 32 + "\n")
+    drucker.text(layout.divider("═"))
     drucker.set(bold=True)
-    drucker.text(f"{'SUMME':<20} {summe:>7.2f}€\n")
+    drucker.text(layout.row("SUMME", layout.money(summe)))
     drucker.set(bold=False)
-    drucker.text(f"{'darin MwSt. 7%':<20} {mwst:>7.2f}€\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.row("darin MwSt. 7%", layout.money(mwst)))
+    drucker.text(layout.divider())
 
     gezahlt = _runden_auf_50ct(summe)
     rueck   = gezahlt - summe
-    drucker.text(f"{'Gegeben (Bar)':<20} {gezahlt:>7.2f}€\n")
+    drucker.text(layout.row("Gegeben (Bar)", layout.money(gezahlt)))
     drucker.set(bold=True, double_height=True)
-    drucker.text(f"{'RUECKGELD':<16} {rueck:>7.2f}€\n")
+    drucker.text(layout.row("RUECKGELD", layout.money(rueck)))
     drucker.set(bold=False, double_height=False)
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
     drucker.set(align="center")
     drucker.text("Zahlung: Bar\n\n")
-    drucker.text("✦  Vielen Dank für Ihren Besuch!  ✦\n")
+    drucker.text(layout.wrapped("✦  Vielen Dank für Ihren Besuch!  ✦"))
     drucker.text("Wir freuen uns, Sie\n")
     drucker.text("bald wieder zu sehen!\n")
     drucker.text("\n")
@@ -132,4 +134,4 @@ def _kategorie_block(drucker, bestellung, kategorie, titel):
     drucker.text(f"  {titel}\n")
     drucker.set(bold=False)
     for name, preis in items:
-        drucker.text(f"  {name[:24]:<24} {preis:>5.2f}€\n")
+        drucker.text(layout.item(name, preis, indent=2))

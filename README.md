@@ -24,14 +24,16 @@ Available in 🇩🇪 German and 🇬🇧 English.
 Child presses button
         │
         ▼
-Raspberry Pi Zero 2 W  (runs 24/7, no screen needed)
-        │  WiFi
+Raspberry Pi Zero 2 W  (no screen, no network needed)
+        │  USB
         ▼
 Thermal printer
         │
         ▼
 Receipt comes out 🎉
 ```
+
+Everything lives in one box with a single power cable, so the kids can carry it into another room and just plug it in.
 
 Every receipt is unique — random items, prices, names, table numbers, timestamps. No two receipts are ever the same.
 
@@ -53,36 +55,49 @@ Receipts are available in **German** (default) and **English** — see `receipts
 
 ### What you need
 
+Everything below plugs together — **no soldering required**.
+
 | Part | Recommendation | Price |
 |------|---------------|-------|
-| [WiFi Thermal Printer](#printer) | MUNBYN ITPP047 (80mm, WiFi) | ~70 € |
-| Single-board computer | Raspberry Pi Zero 2 W | ~30 € |
-| microSD card | 16 GB Class 10 | ~10 € |
-| Arcade buttons | BerryBase 60mm LED, 3 colours | ~12 € |
-| Power supply | 5V / 2.5A Micro-USB | ~12 € |
-| Enclosure | Wooden box, lunchbox or 3D print | – |
+| [Thermal printer](#printer) | Epson TM-T20II/III **USB**, bought used | 35–50 € |
+| Printer power supply | Epson PS-180 (24V) — ⚠️ often missing, see below | 0–20 € |
+| Single-board computer | Raspberry Pi Zero 2 **WH** *(header pre-soldered)* | ~35 € |
+| microSD card | 16 GB Class 10 | ~8 € |
+| Pi power supply | 5V / 2.5A Micro-USB | ~10 € |
+| USB adapter | Micro-USB **OTG** → USB-A *(the Pi Zero has no USB-A port)* | ~5 € |
+| Arcade buttons | 60mm with 6.3mm spade terminals, 3 colours | ~12 € |
+| Button cables | 6.3mm spade → Dupont socket, 6 pieces | ~8 € |
+| Power strip | Short 3-outlet strip, so only **one** cable leaves the box | ~8 € |
+| Enclosure | Wooden box, toolbox or 3D print | ~15 € |
 
-**Total: ~135 €**
+**Total: ~135 €** — around 90 € if you find a printer with its power supply cheap.
+
+> ⚠️ **The one mistake to avoid when buying used:** many listings ship *without* the PS-180 power supply (24V, 3-pin) — restaurants tend to keep them. Buying one separately costs 17–25 €. Always check the listing says "with power supply". Also make sure you get the **USB** variant — the TM-T20 also exists with serial and Ethernet interfaces.
 
 ---
 
 ### Printer
 
-The code uses the **ESC/POS** protocol, supported by virtually all affordable thermal printers. The printer must be reachable via **WiFi on the same home network** as the Raspberry Pi (TCP port 9100).
+The code uses the **ESC/POS** protocol, supported by virtually all thermal receipt printers. Two connection modes are supported, set via `PRINTER_MODE` in `config.py`:
 
-**MUNBYN ITPP047** *(recommended, ~70 €)*
-- 80mm paper, 230mm/s, auto-cutter
-- WiFi + Ethernet + USB, ESC/POS compatible
-- Well documented for Raspberry Pi projects
-- Search Amazon: `MUNBYN ITPP047 thermal receipt printer`
+- **`"usb"`** *(recommended)* — printer plugs straight into the Pi. Works with no router and no WiFi, so the whole box can be carried anywhere there's a power socket.
+- **`"network"`** — printer sits on the home network (TCP port 9100).
 
-**Xprinter XP-Q80I / XP-N160II** *(alternative, ~50–75 €)*
-- 80mm, WiFi variant available, popular in the maker community
+**Epson TM-T20II / TM-T20III, bought used** *(recommended, 35–50 €)*
+- 80mm paper, auto-cutter, very fast and quiet
+- Built for restaurant use — these things are indestructible
+- Widely available second-hand from restaurant closures
+- Search Kleinanzeigen / eBay: `Epson TM-T20 Bondrucker USB`
 
-**NETUM NT-5890K** *(budget option, ~40–55 €)*
-- 58mm paper (slightly narrower receipts), compact and cheap
+**Star TSP100 (futurePRNT), bought used** *(alternative, ~35 €)*
+- 80mm, auto-cutter, equally solid, also common second-hand
+
+**Any 58mm ESC/POS printer** *(budget option, ~40 €)*
+- Narrower receipts — set `PRINTER_WIDTH = 32` in `config.py`
 
 > **Paper rolls:** Standard 80mm × 80mm thermal rolls, ~10 € for a 10-pack.
+
+> **Receipt width:** `PRINTER_WIDTH` in `config.py` controls how many characters fit per line — **42** for 80mm paper, **32** for 58mm. If your dividers don't reach the edge of the paper, this is the setting to adjust.
 
 ---
 
@@ -161,11 +176,12 @@ cd lepetitcafe
 nano config.py
 ```
 
-Set your printer's IP address and GPIO pins:
+Set how the printer is connected and how wide the paper is:
 
 ```python
-PRINTER_IP  = "192.168.1.xxx"  # find in your router's device list
-PRINTER_PORT = 9100
+PRINTER_MODE   = "usb"            # "usb" or "network"
+PRINTER_DEVICE = "/dev/usb/lp0"   # check with: ls /dev/usb/
+PRINTER_WIDTH  = 42               # 42 for 80mm paper, 32 for 58mm
 
 GPIO_SUPERMARKT  = 17
 GPIO_EISCAFE     = 27
@@ -187,9 +203,13 @@ Installs dependencies and registers the systemd autostart service.
 sudo systemctl start lepetitcafe
 ```
 
+A short **"READY"** receipt prints as soon as the Pi has booted — that's your cue that the buttons are live. (It works as a poor man's status LED; turn it off with `PRINT_READY_RECEIPT = False`.)
+
 **Press a button → receipt comes out!** 🎉
 
 Le Petit Café now starts automatically every time the Pi is powered on.
+
+> 💡 **If the box gets carried around and unplugged a lot**, enable the read-only filesystem: `sudo raspi-config` → *Performance Options* → *Overlay File System*. Pulling the plug then can't corrupt the SD card.
 
 ---
 
@@ -202,12 +222,14 @@ LePetitCafe/
 ├── requirements.txt         # python-escpos, RPi.GPIO
 ├── setup.sh                 # One-time setup script
 ├── lepetitcafe.service      # systemd unit for autostart
+├── test_receipts.py         # Checks every receipt fits the paper width
 ├── simulate_web.py          # Local web simulator (no hardware needed)
 ├── simulator.html           # Standalone demo — German
 ├── simulator_en.html        # Standalone demo — English
 ├── docs/
 │   └── preview.png
 └── receipts/
+    ├── layout.py            # Width-aware line layout (58mm / 80mm)
     ├── supermarkt.py        # 🇩🇪 PETIT MARCHÉ
     ├── eiscafe.py           # 🇩🇪 LE PETIT CAFÉ
     ├── restaurant.py        # 🇩🇪 LE PETIT BISTRO
@@ -227,10 +249,14 @@ journalctl -u lepetitcafe -f
 # Restart service
 sudo systemctl restart lepetitcafe
 
-# Test printer manually
+# Is the USB printer detected?
+ls /dev/usb/          # expect lp0
+lsusb                 # expect e.g. "Seiko Epson Corp. Receipt Printer"
+
+# Test printer manually (USB)
 python3 -c "
-from escpos.printer import Network
-p = Network('192.168.1.xxx')
+from escpos.printer import File
+p = File('/dev/usb/lp0')
 p.text('Hello from Le Petit Café!\n')
 p.cut()
 p.close()
@@ -240,7 +266,10 @@ print('Success!')
 
 | Problem | Solution |
 |---------|----------|
-| Printer unreachable | Check IP in `config.py`; printer and Pi on same WiFi? |
+| `/dev/usb/lp0` missing | Printer switched on? Using the **OTG** adapter on the Pi Zero? Check `lsusb` |
+| Permission denied on `/dev/usb/lp0` | `sudo usermod -a -G lp $USER`, then reboot |
+| Printer unreachable (network mode) | Check IP in `config.py`; printer and Pi on same WiFi? |
+| Dividers don't span the paper | Wrong `PRINTER_WIDTH` — use 42 for 80mm, 32 for 58mm |
 | Button not responding | Check GPIO pin number; check wiring |
 | Service won't start | `journalctl -u lepetitcafe` for details |
 | Receipt cuts off | Increase `DEBOUNCE_SECONDS` in `config.py` |
@@ -262,9 +291,8 @@ PRs welcome! Ideas:
 
 - 🌍 More languages (French, Spanish, Italian...)
 - 🏪 New play worlds (bakery, pharmacy, petrol station...)
-- 🛠️ USB printer support
 - 📦 3D-printable enclosure (STL files)
-- 🧪 Unit tests for receipt generators
+- 🔋 Battery-powered variant (58mm printer module + power bank)
 
 ---
 

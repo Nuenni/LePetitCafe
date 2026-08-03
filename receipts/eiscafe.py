@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
 
+from . import layout
+
 LADEN_NAME = "LE PETIT CAFÉ"
 SLOGAN     = "Eis · Waffeln · Träume"
 
@@ -51,35 +53,35 @@ def erstelle_bon(drucker):
     drucker.text(f"{LADEN_NAME}\n")
     drucker.set(align="center", bold=False, double_height=False, double_width=False)
     drucker.text("✿  " + SLOGAN + "  ✿\n")
-    drucker.text("Seepromenade 3 · 12345 Sonnenstadt\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.wrapped("Seepromenade 3 · 12345 Sonnenstadt"))
+    drucker.text(layout.divider())
 
     drucker.set(align="left")
     drucker.text(f"Tisch:    {tisch:<4}  Bon-Nr.: {bonNr}\n")
     drucker.text(f"Bedienung: {kellner}\n")
     drucker.text(f"Uhrzeit:  {now.strftime('%H:%M')} Uhr\n")
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
 
     for name, preis, menge in positionen:
         gesamt_pos = preis * menge
-        drucker.text(f"{menge}x {name[:22]}\n")
+        drucker.text(layout.wrapped(f"{menge}x {name}"))
         drucker.text(f"   {menge} x {preis:.2f}€ = {gesamt_pos:.2f}€\n")
         # Eissorten-Hinweis wenn relevant
         if "kugel" in name.lower() or "waffeleis" in name.lower() or "becher" in name.lower():
             kugeln = random.sample(EISSORTEN, k=min(3, menge * 2))
-            drucker.text(f"   ({', '.join(kugeln)})\n")
+            drucker.text(layout.wrapped(f"({', '.join(kugeln)})", indent=3))
 
-    drucker.text("═" * 32 + "\n")
+    drucker.text(layout.divider("═"))
     drucker.set(bold=True)
-    drucker.text(f"{'Zwischensumme':<20} {summe:>7.2f}€\n")
+    drucker.text(layout.row("Zwischensumme", layout.money(summe)))
     drucker.set(bold=False)
     if trinkgeld_pct > 0:
-        drucker.text(f"{'Trinkgeld ' + str(trinkgeld_pct) + '%':<20} {trinkgeld:>7.2f}€\n")
+        drucker.text(layout.row(f"Trinkgeld {trinkgeld_pct}%", layout.money(trinkgeld)))
     drucker.set(bold=True, double_height=True)
-    drucker.text(f"{'GESAMT':<16} {gesamt:>7.2f}€\n")
+    drucker.text(layout.row("GESAMT", layout.money(gesamt)))
     drucker.set(bold=False, double_height=False)
 
-    drucker.text("─" * 32 + "\n")
+    drucker.text(layout.divider())
     drucker.set(align="center")
     drucker.text("Zahlung: Bar\n")
     drucker.text(f"{now.strftime('%d.%m.%Y')}\n")
