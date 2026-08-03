@@ -29,7 +29,11 @@ class HtmlPrinter:
         if align         is not None: self._align = align
 
     def text(self, txt: str):
-        for line in txt.split("\n"):
+        lines = txt.split("\n")
+        # Ein abschliessendes \n beendet nur die Zeile, es ist keine Leerzeile.
+        if lines and lines[-1] == "":
+            lines.pop()
+        for line in lines:
             self.blocks.append({
                 "t": line, "b": self._bold or self._big,
                 "big": self._big, "a": self._align,

@@ -1,6 +1,8 @@
 import random, math
 from datetime import datetime
 
+from . import layout
+
 STORE_NAME = "THE LITTLE BISTRO"
 SLOGAN     = "Bon appétit!"
 
@@ -71,39 +73,39 @@ def erstelle_bon(printer):
     printer.text(f"{STORE_NAME}\n")
     printer.set(align="center", bold=False, double_height=False, double_width=False)
     printer.text(f"✦  {SLOGAN}  ✦\n")
-    printer.text("7 Market Square · 12345 Pleasantville\n")
+    printer.text(layout.wrapped("7 Market Square · 12345 Pleasantville"))
     printer.text("www.thelittlebistro.com\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
 
     printer.set(align="left")
     printer.text(f"Table:   {table:<3}  Receipt No.: {rec_no:02d}\n")
     printer.text(f"Guests:  {guests}\n")
     printer.text(f"Server:  {server}\n")
     printer.text(f"Date:    {now.strftime('%d/%m/%Y  %H:%M')}\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
 
     _section(printer, order, STARTERS,  "STARTERS")
     _section(printer, order, MAINS,     "MAIN COURSES")
     _section(printer, order, DESSERTS,  "DESSERTS")
     _section(printer, order, DRINKS,    "DRINKS")
 
-    printer.text("═" * 32 + "\n")
+    printer.text(layout.divider("═"))
     printer.set(bold=True)
-    printer.text(f"{'TOTAL':<20} {total:>7.2f}€\n")
+    printer.text(layout.row("TOTAL", layout.money(total)))
     printer.set(bold=False)
-    printer.text(f"{'incl. VAT 7%':<20} {tax:>7.2f}€\n")
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.row("incl. VAT 7%", layout.money(tax)))
+    printer.text(layout.divider())
 
     paid   = math.ceil(total * 2) / 2
     change = paid - total
-    printer.text(f"{'Cash given':<20} {paid:>7.2f}€\n")
+    printer.text(layout.row("Cash given", layout.money(paid)))
     printer.set(bold=True, double_height=True)
-    printer.text(f"{'CHANGE':<16} {change:>7.2f}€\n")
+    printer.text(layout.row("CHANGE", layout.money(change)))
     printer.set(bold=False, double_height=False)
-    printer.text("─" * 32 + "\n")
+    printer.text(layout.divider())
     printer.set(align="center")
     printer.text("Payment: Cash\n\n")
-    printer.text("✦  Thank you for dining with us!  ✦\n")
+    printer.text(layout.wrapped("✦  Thank you for dining with us!  ✦"))
     printer.text("We hope to see you again soon!\n")
     printer.text("\n")
     printer.text(f"{STORE_NAME}\n")
@@ -118,4 +120,4 @@ def _section(printer, order, category, title):
     printer.text(f"  {title}\n")
     printer.set(bold=False)
     for name, price in items:
-        printer.text(f"  {name[:24]:<24} {price:>5.2f}€\n")
+        printer.text(layout.item(name, price, indent=2))
