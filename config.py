@@ -1,11 +1,23 @@
 # ─── Drucker ──────────────────────────────────────────────────────────────
 # "usb"     = Drucker hängt per USB-Kabel am Pi  (empfohlen, braucht kein WLAN)
+# "serial"  = Drucker hat nur RS232, per USB-Nullmodem-Kabel angeschlossen
 # "network" = Drucker hängt per WLAN/LAN im Heimnetz
 PRINTER_MODE = "usb"
 
 # Nur bei PRINTER_MODE = "usb":
 # Gerätedatei des Druckers. Nach dem Einstecken prüfen mit:  ls /dev/usb/
 PRINTER_DEVICE = "/dev/usb/lp0"
+
+# Nur bei PRINTER_MODE = "serial":
+# Gerätedatei des USB-Seriell-Adapters. Prüfen mit:  ls /dev/ttyUSB*
+SERIAL_DEVICE   = "/dev/ttyUSB0"
+# Die Baudrate MUSS zur Einstellung im Drucker passen, sonst kommt Kauderwelsch.
+# Auslesen: Drucker ausschalten, FEED-Taste gedrückt halten, einschalten –
+# er druckt einen Selbsttest mit seinen aktuellen Einstellungen aus.
+SERIAL_BAUDRATE = 38400
+# Hardware-Flusskontrolle. Epson-Bondrucker brauchen das, sonst gehen bei
+# längeren Bons Zeilen verloren, weil der Druckpuffer überläuft.
+SERIAL_DSRDTR   = True
 
 # Nur bei PRINTER_MODE = "network":
 PRINTER_IP   = "192.168.1.100"

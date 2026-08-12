@@ -8,8 +8,8 @@ After=multi-user.target
 [Service]
 Type=simple
 User=pi
-# Zugriff auf /dev/usb/lp0 (gehört root:lp)
-SupplementaryGroups=lp
+# Zugriff auf /dev/usb/lp0 (root:lp) bzw. /dev/ttyUSB0 (root:dialout)
+SupplementaryGroups=lp dialout
 WorkingDirectory=/home/pi/LePetitCafe
 ExecStart=/usr/bin/python3 /home/pi/LePetitCafe/main.py
 Restart=on-failure

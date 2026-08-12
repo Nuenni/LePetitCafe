@@ -78,9 +78,10 @@ Everything below plugs together — **no soldering required**.
 
 ### Printer
 
-The code uses the **ESC/POS** protocol, supported by virtually all thermal receipt printers. Two connection modes are supported, set via `PRINTER_MODE` in `config.py`:
+The code uses the **ESC/POS** protocol, supported by virtually all thermal receipt printers. Three connection modes are supported, set via `PRINTER_MODE` in `config.py`:
 
 - **`"usb"`** *(recommended)* — printer plugs straight into the Pi. Works with no router and no WiFi, so the whole box can be carried anywhere there's a power socket.
+- **`"serial"`** — for older printers that only have RS232. See [Serial printers](#serial-printers-rs232) below.
 - **`"network"`** — printer sits on the home network (TCP port 9100).
 
 **Epson TM-T20II / TM-T20III, bought used** *(recommended, 35–50 €)*
@@ -98,6 +99,25 @@ The code uses the **ESC/POS** protocol, supported by virtually all thermal recei
 > **Paper rolls:** Standard 80mm × 80mm thermal rolls, ~10 € for a 10-pack.
 
 > **Receipt width:** `PRINTER_WIDTH` in `config.py` controls how many characters fit per line — **42** for 80mm paper, **32** for 58mm. If your dividers don't reach the edge of the paper, this is the setting to adjust.
+
+---
+
+### Serial printers (RS232)
+
+Plenty of cheap second-hand printers only have RS232. They work fine — you just need the right cable and the right baud rate.
+
+**The cable.** Epson printers use a **DB25 socket** and need a **null-modem** (crossover) cable, not a straight-through one. Buy it as a single part rather than stacking adapters — search for `FTDI USB RS232 DB25 null modem cable Epson TM` (~15–20 €). It shows up on the Pi as `/dev/ttyUSB0`.
+
+**The baud rate.** This is the one thing that has to match, or you get garbled output. To find out what the printer is set to: **switch it off, hold the FEED button, switch it on** — it prints a self-test page listing its current serial settings. Put that value into `config.py`:
+
+```python
+PRINTER_MODE    = "serial"
+SERIAL_DEVICE   = "/dev/ttyUSB0"
+SERIAL_BAUDRATE = 38400      # whatever the self-test says
+SERIAL_DSRDTR   = True       # keep this on
+```
+
+> Leave `SERIAL_DSRDTR = True`. Epson printers rely on hardware flow control; without it, longer receipts lose lines when the print buffer fills up.
 
 ---
 
@@ -267,7 +287,10 @@ print('Success!')
 | Problem | Solution |
 |---------|----------|
 | `/dev/usb/lp0` missing | Printer switched on? Using the **OTG** adapter on the Pi Zero? Check `lsusb` |
-| Permission denied on `/dev/usb/lp0` | `sudo usermod -a -G lp $USER`, then reboot |
+| Permission denied on `/dev/usb/lp0` | `sudo usermod -a -G lp,dialout $USER`, then reboot |
+| Serial: garbled characters | Wrong `SERIAL_BAUDRATE` — read the real value off the FEED-button self-test |
+| Serial: lines missing on long receipts | `SERIAL_DSRDTR = True` (flow control) |
+| Serial: nothing happens at all | Straight-through cable instead of **null-modem**? Check `ls /dev/ttyUSB*` |
 | Printer unreachable (network mode) | Check IP in `config.py`; printer and Pi on same WiFi? |
 | Dividers don't span the paper | Wrong `PRINTER_WIDTH` — use 42 for 80mm, 32 for 58mm |
 | Button not responding | Check GPIO pin number; check wiring |

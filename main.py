@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 import RPi.GPIO as GPIO
-from escpos.printer import File, Network
+from escpos.printer import File, Network, Serial
 
 import config
 from receipts import layout, supermarkt, eiscafe, restaurant
@@ -32,10 +32,26 @@ _letzter_druck: dict[int, float] = {}
 
 
 def _drucker_verbinden():
-    """Verbindung zum Drucker – per USB-Kabel oder über das Heimnetz."""
+    """Verbindung zum Drucker – per USB, RS232 oder über das Heimnetz."""
     if config.PRINTER_MODE == "network":
         return Network(config.PRINTER_IP, port=config.PRINTER_PORT, timeout=5)
+    if config.PRINTER_MODE == "serial":
+        return Serial(
+            devfile=config.SERIAL_DEVICE,
+            baudrate=config.SERIAL_BAUDRATE,
+            dsrdtr=config.SERIAL_DSRDTR,
+            timeout=5,
+        )
     return File(config.PRINTER_DEVICE)
+
+
+def _druckerziel() -> str:
+    """Beschreibt fürs Log, wohin gedruckt wird."""
+    if config.PRINTER_MODE == "network":
+        return f"{config.PRINTER_IP}:{config.PRINTER_PORT}"
+    if config.PRINTER_MODE == "serial":
+        return f"{config.SERIAL_DEVICE} @ {config.SERIAL_BAUDRATE} Baud"
+    return config.PRINTER_DEVICE
 
 
 def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
@@ -105,12 +121,8 @@ def main() -> None:
             bouncetime=300,
         )
 
-    if config.PRINTER_MODE == "network":
-        ziel = f"{config.PRINTER_IP}:{config.PRINTER_PORT}"
-    else:
-        ziel = config.PRINTER_DEVICE
     log.info("LePetitCafe gestartet – Drucker: %s (%d Zeichen breit)",
-             ziel, config.PRINTER_WIDTH)
+             _druckerziel(), config.PRINTER_WIDTH)
     log.info(
         "Pins: Supermarkt=GPIO%d  Eiscafé=GPIO%d  Restaurant=GPIO%d",
         config.GPIO_SUPERMARKT,
