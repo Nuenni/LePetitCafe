@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 STORE_NAME = "THE LITTLE CAFÉ"
 SLOGAN     = "Ice Cream · Waffles · Dreams"
@@ -57,13 +58,22 @@ MENU = [
     ("Hot Cocoa",              2.80, 0),
 ]
 
-STAFF = ["Anna", "Tom", "Lena", "Felix", "Clara", "Ben"]
+
+# Goes into the QR code on the receipt. ASCII only, see layout.codes().
+QR_MESSAGES = [
+    "VOUCHER: One extra scoop, more than usual. Promise!",
+    "VOUCHER: You choose the flavour for everyone.",
+    "VOUCHER: Sprinkles on top, no need to ask.",
+    "What does a snowman do in summer? A puddle.",
+    "Why is ice cream never grumpy? It's always well chilled!",
+    "What do you call ice cream that tells jokes? A sundae funny.",
+]
 
 def erstelle_bon(printer):
     now     = datetime.now()
     rec_no  = random.randint(100, 999)
     table   = random.randint(1, 8)
-    server  = random.choice(STAFF)
+    server  = random.choice(config.STAFF_NAMES)
     count   = random.randint(3, 7)
 
     selection = random.sample(MENU, k=min(count, len(MENU)))
@@ -73,14 +83,11 @@ def erstelle_bon(printer):
     ]
 
     subtotal  = sum(price * qty for _, price, _, qty in positions)
-    tip_pct   = random.choice([0, 5, 10])
-    tip       = round(subtotal * tip_pct / 100, 2)
-    total     = subtotal + tip
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
     printer.set(align="center", bold=False, double_height=False, double_width=False)
-    printer.text(layout.wrapped("✿  " + SLOGAN + "  ✿"))
+    printer.text(layout.wrapped("*  " + SLOGAN + "  *"))
     printer.text(layout.wrapped("3 Lake Promenade · 12345 Sunnyville"))
     printer.text(layout.divider())
 
@@ -99,21 +106,18 @@ def erstelle_bon(printer):
             printer.text(layout.wrapped(f"({', '.join(chosen)})", indent=3))
 
     printer.text(layout.divider("═"))
-    printer.set(bold=True)
-    printer.text(layout.row("Subtotal", layout.money(subtotal)))
-    printer.set(bold=False)
-    if tip_pct > 0:
-        printer.text(layout.row(f"Tip {tip_pct}%", layout.money(tip)))
     printer.set(bold=True, double_height=True)
-    printer.text(layout.row("TOTAL", layout.money(total)))
+    printer.text(layout.row("TOTAL", layout.money(subtotal)))
     printer.set(bold=False, double_height=False)
     printer.text(layout.divider())
     printer.set(align="center")
     printer.text("Payment: Cash\n")
     printer.text(f"{now.strftime('%d/%m/%Y')}\n")
     printer.text("\n")
-    printer.text("★  Thank you for your visit!  ★\n")
+    printer.text("*  Thank you for your visit!  *\n")
     printer.text("We wish you a\n")
     printer.text("wonderful day!\n")
-    printer.text("✿ ✿ ✿\n")
+    printer.text("* * *\n")
+    layout.codes(printer, random.choice(QR_MESSAGES),
+                 f"LPC{rec_no:05d}", "Scan me!")
     printer.cut()

@@ -46,6 +46,14 @@ class TextPrinter:
     def close(self):
         pass
 
+    # QR- und Barcode erzeugen keine Textzeilen und sind für die
+    # Breitenprüfung ohne Belang. Sie müssen nur vorhanden sein.
+    def qr(self, content, **_):
+        pass
+
+    def barcode(self, code, bc, **_):
+        pass
+
 
 def main() -> int:
     fehler = []

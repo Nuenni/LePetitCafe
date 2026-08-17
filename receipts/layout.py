@@ -50,6 +50,34 @@ def wrapped(text: str, indent: int = 0) -> str:
     return "".join(" " * indent + zeile + "\n" for zeile in zeilen)
 
 
+def codes(drucker, qr_text: str, bon_nummer: str, hinweis: str) -> None:
+    """
+    Schließt den Bon mit QR-Code und Barcode ab.
+
+    Der QR-Code enthält den Text direkt – kein Link, kein Server. Wer ihn mit
+    dem Handy scannt, sieht die Nachricht sofort, auch ohne Internet.
+
+    Der Text ist bewusst frei von Umlauten: Der Drucker erzeugt den QR-Code
+    selbst (native=True) und übernimmt die Bytes so, wie wir sie schicken.
+    Reines ASCII liest jeder Scanner gleich, bei Umlauten hängt das Ergebnis
+    vom Gerät ab.
+
+    Nicht jeder ESC/POS-Drucker beherrscht QR-Codes. Kann er es nicht, soll
+    der Bon trotzdem komplett rauskommen – deshalb der Auffangblock.
+    """
+    drucker.set(align="center", bold=False, double_height=False,
+                double_width=False)
+    drucker.text("\n")
+    try:
+        drucker.qr(qr_text, size=6, native=True, center=True)
+        drucker.text(hinweis + "\n\n")
+        drucker.barcode(bon_nummer, "CODE39", height=48, width=2,
+                        pos="BELOW", align_ct=True)
+    except Exception:
+        # Drucker ohne Code-Unterstuetzung: wenigstens die Nummer lesbar.
+        drucker.text(bon_nummer + "\n")
+
+
 def item(name: str, betrag: float, indent: int = 0) -> str:
     """Artikelzeile. Zu lange Namen werden auf die Papierbreite gekürzt."""
     wert = money(betrag)

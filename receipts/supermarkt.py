@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 LADEN_NAME = "PETIT MARCHÉ"
 SLOGAN     = "Frisch. Lecker. Günstig."
@@ -37,14 +38,23 @@ SORTIMENT = [
     ("Shampoo",             2.49,  "1 Fl."),
 ]
 
-KASSIERER = ["Emilia", "Max", "Sophie", "Lukas", "Mia", "Jonas"]
+
+# Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
+QR_NACHRICHTEN = [
+    "GUTSCHEIN: Du darfst heute aussuchen, was es zum Nachtisch gibt!",
+    "GUTSCHEIN: Einmal den Einkaufswagen schieben - ganz allein!",
+    "GUTSCHEIN: Eine Kugel Eis extra. Einzuloesen bei Mama oder Papa.",
+    "Warum nehmen Bienen keinen Einkaufswagen? Sie haben doch Koerbchen!",
+    "Was ist orange und wandert durch die Berge? Eine Wanderine!",
+    "Treffen sich zwei Kekse. Sagt der eine: Du kruemelst ja!",
+]
 
 def erstelle_bon(drucker):
     now    = datetime.now()
     items  = random.sample(SORTIMENT, k=random.randint(4, 9))
     summe  = sum(i[1] for i in items)
     mwst   = summe * 0.19
-    name   = random.choice(KASSIERER)
+    name   = random.choice(config.STAFF_NAMES)
     bonNr  = random.randint(1000, 9999)
     kasse  = random.randint(1, 4)
 
@@ -86,6 +96,8 @@ def erstelle_bon(drucker):
     drucker.text(f"{random.choice(_sprueche())}\n")
     drucker.text("Vielen Dank für Ihren Einkauf!\n")
     drucker.text("Auf Wiedersehen!\n")
+    layout.codes(drucker, random.choice(QR_NACHRICHTEN),
+                 f"LPC{bonNr:05d}", "Scann mich!")
     drucker.cut()
 
 def _runden_auf_50ct(betrag):
@@ -94,9 +106,9 @@ def _runden_auf_50ct(betrag):
 
 def _sprueche():
     return [
-        "★ Guten Appetit! ★",
-        "★ Schönen Tag noch! ★",
-        "★ Bleiben Sie gesund! ★",
-        "★ Wir freuen uns auf Sie! ★",
-        "★ Danke, kleiner Einkäufer! ★",
+        "* Guten Appetit! *",
+        "* Schönen Tag noch! *",
+        "* Bleiben Sie gesund! *",
+        "* Wir freuen uns auf Sie! *",
+        "* Danke, kleiner Einkäufer! *",
     ]

@@ -44,10 +44,23 @@ Every receipt is unique — random items, prices, names, table numbers, timestam
 | Button | Store | Receipt includes |
 |--------|-------|-----------------|
 | 🔴 Red | **PETIT MARCHÉ** (Supermarket) | Groceries, cashier name, change calculation |
-| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Ice cream flavours, table number, optional tip |
-| 🔵 Blue | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, server, VAT |
+| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Sundaes, ice lollies, chosen flavours |
+| 🔵 Blue | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, VAT, sometimes a tip |
+
+All three end with a barcode and a **scannable QR code** containing a joke or a voucher — see below.
 
 Receipts are available in **German** (default) and **English** — see `receipts/` folder.
+
+### The QR code
+
+Every receipt ends with a barcode and a QR code. The QR doesn't point at a website — **the message is encoded in the code itself**, so scanning it with any phone camera shows the text instantly, with no internet connection and nothing to host or keep running.
+
+Each play world has its own pool of jokes and vouchers:
+
+> *VOUCHER: You're head chef today. What are we having?*
+> *Waiter, there's a fly in my soup! — Don't worry, the spider is coming.*
+
+Edit `QR_MESSAGES` in any receipt file to add your own. Keep them ASCII — the printer generates the QR in hardware and passes the bytes through as given, so plain ASCII reads identically on every scanner while accented characters depend on the device.
 
 ---
 
@@ -203,14 +216,33 @@ nano config.py
 Set how the printer is connected and how wide the paper is:
 
 ```python
-PRINTER_MODE   = "usb"            # "usb" or "network"
+PRINTER_MODE   = "usb"            # "usb", "serial" or "network"
 PRINTER_DEVICE = "/dev/usb/lp0"   # check with: ls /dev/usb/
 PRINTER_WIDTH  = 42               # 42 for 80mm paper, 32 for 58mm
+LANGUAGE       = "en"             # "de" or "en"
 
 GPIO_SUPERMARKT  = 17
 GPIO_EISCAFE     = 27
 GPIO_RESTAURANT  = 22
 ```
+
+### Step 3b — Your own names (optional)
+
+The receipts name a cashier and a server. Out of the box those are generic placeholders — because `config.py` is in a public repository and **real names, especially children's names, don't belong there.**
+
+For anything personal, create a `config_local.py` instead. It's listed in `.gitignore`, so it stays on your device and can never be committed by accident:
+
+```bash
+cp config_local.py.example config_local.py
+nano config_local.py
+```
+
+```python
+STAFF_NAMES = ["Anna", "Ben", "Charlie"]   # your kids
+LANGUAGE    = "de"                          # German receipts
+```
+
+Anything you put there overrides `config.py`; anything you leave out keeps its default. The same file is the right place for your printer's IP address or any other detail that's nobody else's business.
 
 ### Step 4 — Run setup
 
@@ -242,12 +274,13 @@ Le Petit Café now starts automatically every time the Pi is powered on.
 ```
 LePetitCafe/
 ├── main.py                  # GPIO listener, print dispatcher
-├── config.py                # ← Set printer IP and GPIO pins here
+├── config.py                # ← Printer, GPIO pins, language
+├── config_local.py.example  # ← Template for personal settings (gitignored)
 ├── requirements.txt         # python-escpos, RPi.GPIO
 ├── setup.sh                 # One-time setup script
 ├── lepetitcafe.service      # systemd unit for autostart
 ├── test_receipts.py         # Checks every receipt fits the paper width
-├── simulate_web.py          # Local web simulator (no hardware needed)
+├── preview.py               # Regenerates the two demos below
 ├── simulator.html           # Standalone demo — German
 ├── simulator_en.html        # Standalone demo — English
 ├── docs/
@@ -261,6 +294,20 @@ LePetitCafe/
     ├── icecream.py          # 🇬🇧 THE LITTLE CAFÉ
     └── bistro.py            # 🇬🇧 THE LITTLE BISTRO
 ```
+
+---
+
+## Preview without hardware
+
+```bash
+python3 preview.py
+```
+
+Regenerates `simulator.html` and `simulator_en.html` — standalone pages with 24 sample receipts, three arcade buttons to cycle through them, and no server needed. Open the file in any browser.
+
+The preview is **character-accurate**: it renders in real monospace at exactly `PRINTER_WIDTH` columns, so what you see is what the printer puts out. It also checks every character against the printer's actual code-page profile via `python-escpos` and highlights anything the printer can't represent in red.
+
+That check is worth running after editing any receipt text. Thermal printers don't do Unicode — they switch between 8-bit code pages. Box-drawing characters (`─ ═`), umlauts, `é` and even `€` all work, but decorative symbols like `★ ✿ ✦` have no code page and would silently print as `?`.
 
 ---
 

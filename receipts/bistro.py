@@ -2,6 +2,7 @@ import random, math
 from datetime import datetime
 
 from . import layout
+import config
 
 STORE_NAME = "THE LITTLE BISTRO"
 SLOGAN     = "Bon appétit!"
@@ -45,14 +46,23 @@ DRINKS = [
     ("Milk",                1.80),
 ]
 
-STAFF = ["Marie", "Luca", "Hannah", "Noah", "Emma", "Paul", "Lea", "Tim"]
+
+# Goes into the QR code on the receipt. ASCII only, see layout.codes().
+QR_MESSAGES = [
+    "VOUCHER: You're head chef today. What are we having?",
+    "VOUCHER: Skip laying the table, just this once.",
+    "VOUCHER: Pudding before dinner. Today only.",
+    "Waiter, there's a fly in my soup! - Don't worry, the spider is coming.",
+    "Why did the tomato blush? It saw the salad dressing!",
+    "What does an angry chef do? He simmers down.",
+]
 
 def erstelle_bon(printer):
     now     = datetime.now()
     rec_no  = random.randint(1, 99)
     table   = random.randint(1, 12)
     guests  = random.randint(2, 5)
-    server  = random.choice(STAFF)
+    server  = random.choice(config.STAFF_NAMES)
 
     order = []
     if random.random() > 0.3:
@@ -69,10 +79,17 @@ def erstelle_bon(printer):
     total = sum(p for _, p in order)
     tax   = total * 0.07
 
+    # Tip for the server. The doubled zero means roughly every other receipt
+    # has none — otherwise it stops reading as a kind gesture and becomes
+    # just another line.
+    tip_pct = random.choice([0, 0, 5, 10])
+    tip = round(total * tip_pct / 100, 2)
+    to_pay = total + tip
+
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
     printer.set(align="center", bold=False, double_height=False, double_width=False)
-    printer.text(f"✦  {SLOGAN}  ✦\n")
+    printer.text(f"*  {SLOGAN}  *\n")
     printer.text(layout.wrapped("7 Market Square · 12345 Pleasantville"))
     printer.text("www.thelittlebistro.com\n")
     printer.text(layout.divider())
@@ -94,10 +111,15 @@ def erstelle_bon(printer):
     printer.text(layout.row("TOTAL", layout.money(total)))
     printer.set(bold=False)
     printer.text(layout.row("incl. VAT 7%", layout.money(tax)))
+    if tip_pct:
+        printer.text(layout.row(f"Tip {tip_pct}%", layout.money(tip)))
+        printer.set(bold=True)
+        printer.text(layout.row("TO PAY", layout.money(to_pay)))
+        printer.set(bold=False)
     printer.text(layout.divider())
 
-    paid   = math.ceil(total * 2) / 2
-    change = paid - total
+    paid   = math.ceil(to_pay * 2) / 2
+    change = paid - to_pay
     printer.text(layout.row("Cash given", layout.money(paid)))
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("CHANGE", layout.money(change)))
@@ -105,10 +127,12 @@ def erstelle_bon(printer):
     printer.text(layout.divider())
     printer.set(align="center")
     printer.text("Payment: Cash\n\n")
-    printer.text(layout.wrapped("✦  Thank you for dining with us!  ✦"))
+    printer.text(layout.wrapped("*  Thank you for dining with us!  *"))
     printer.text("We hope to see you again soon!\n")
     printer.text("\n")
     printer.text(f"{STORE_NAME}\n")
+    layout.codes(printer, random.choice(QR_MESSAGES),
+                 f"LPB{rec_no:05d}", "Scan me!")
     printer.cut()
 
 def _section(printer, order, category, title):

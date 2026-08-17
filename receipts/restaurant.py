@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 LADEN_NAME = "LE PETIT BISTRO"
 SLOGAN     = "Bon appétit!"
@@ -45,14 +46,23 @@ GETRAENKE = [
     ("Milch",                  1.80),
 ]
 
-KELLNER = ["Marie", "Luca", "Hannah", "Noah", "Emma", "Paul", "Lea", "Tim"]
+
+# Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
+QR_NACHRICHTEN = [
+    "GUTSCHEIN: Du bist heute der Chefkoch. Was gibt es?",
+    "GUTSCHEIN: Einmal Tisch decken erlassen.",
+    "GUTSCHEIN: Heute darfst du den Nachtisch zuerst essen.",
+    "Kellner, eine Fliege in der Suppe! - Keine Sorge, die Spinne kommt gleich.",
+    "Warum wurde die Tomate rot? Sie hat den Salat beim Umziehen gesehen!",
+    "Was macht ein Koch, wenn er wuetend ist? Er brutzelt vor sich hin.",
+]
 
 def erstelle_bon(drucker):
     now     = datetime.now()
     bonNr   = random.randint(1, 99)
     tisch   = random.randint(1, 12)
     pers    = random.randint(2, 5)
-    kellner = random.choice(KELLNER)
+    kellner = random.choice(config.STAFF_NAMES)
 
     bestellung = []
 
@@ -77,10 +87,17 @@ def erstelle_bon(drucker):
     summe = sum(p for _, p in bestellung)
     mwst  = summe * 0.07  # Restaurant: 7% MwSt auf Speisen
 
+    # Trinkgeld für die Bedienung. Die doppelte 0 sorgt dafür, dass etwa
+    # jeder zweite Bon ohne auskommt – sonst wäre es keine nette Geste mehr,
+    # sondern Routine.
+    trinkgeld_pct = random.choice([0, 0, 5, 10])
+    trinkgeld = round(summe * trinkgeld_pct / 100, 2)
+    gesamt = summe + trinkgeld
+
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
     drucker.set(align="center", bold=False, double_height=False, double_width=False)
-    drucker.text(f"✦  {SLOGAN}  ✦\n")
+    drucker.text(f"*  {SLOGAN}  *\n")
     drucker.text("Marktplatz 7 · 12345 Genussstadt\n")
     drucker.text("www.lepetitbistro.de\n")
     drucker.text(layout.divider())
@@ -103,10 +120,15 @@ def erstelle_bon(drucker):
     drucker.text(layout.row("SUMME", layout.money(summe)))
     drucker.set(bold=False)
     drucker.text(layout.row("darin MwSt. 7%", layout.money(mwst)))
+    if trinkgeld_pct:
+        drucker.text(layout.row(f"Trinkgeld {trinkgeld_pct}%", layout.money(trinkgeld)))
+        drucker.set(bold=True)
+        drucker.text(layout.row("GESAMT", layout.money(gesamt)))
+        drucker.set(bold=False)
     drucker.text(layout.divider())
 
-    gezahlt = _runden_auf_50ct(summe)
-    rueck   = gezahlt - summe
+    gezahlt = _runden_auf_50ct(gesamt)
+    rueck   = gezahlt - gesamt
     drucker.text(layout.row("Gegeben (Bar)", layout.money(gezahlt)))
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("RUECKGELD", layout.money(rueck)))
@@ -114,11 +136,13 @@ def erstelle_bon(drucker):
     drucker.text(layout.divider())
     drucker.set(align="center")
     drucker.text("Zahlung: Bar\n\n")
-    drucker.text(layout.wrapped("✦  Vielen Dank für Ihren Besuch!  ✦"))
+    drucker.text(layout.wrapped("*  Vielen Dank für Ihren Besuch!  *"))
     drucker.text("Wir freuen uns, Sie\n")
     drucker.text("bald wieder zu sehen!\n")
     drucker.text("\n")
     drucker.text(f"{LADEN_NAME}\n")
+    layout.codes(drucker, random.choice(QR_NACHRICHTEN),
+                 f"LPB{bonNr:05d}", "Scann mich!")
     drucker.cut()
 
 def _runden_auf_50ct(betrag):
