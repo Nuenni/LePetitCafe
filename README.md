@@ -61,7 +61,7 @@ Everything below plugs together — **no soldering required**.
 |------|---------------|-------|
 | [Thermal printer](#printer) | Epson TM-T20II/III **USB**, bought used | 35–50 € |
 | Printer power supply | Epson PS-180 (24V) — ⚠️ often missing, see below | 0–20 € |
-| Single-board computer | Raspberry Pi Zero 2 **WH** *(header pre-soldered)* | ~35 € |
+| Single-board computer | Raspberry Pi Zero 2 **WH** *(header pre-soldered)* | ~25 € |
 | microSD card | 16 GB Class 10 | ~8 € |
 | Pi power supply | 5V / 2.5A Micro-USB | ~10 € |
 | USB adapter | Micro-USB **OTG** → USB-A *(the Pi Zero has no USB-A port)* | ~5 € |
@@ -123,12 +123,16 @@ SERIAL_DSRDTR   = True       # keep this on
 
 ### Raspberry Pi Zero 2 W
 
-| | Pi Zero 2 W *(recommended)* | Pi Zero W *(budget)* |
+Get the **WH** variant — the "H" means the GPIO header is already soldered on, which is the difference between a plug-together build and one that needs a soldering iron.
+
+| | Pi Zero 2 WH *(recommended)* | Pi Zero WH *(also fine)* |
 |--|--|--|
-| Price | ~28–35 € | ~15–20 € |
+| Price | ~25–30 € | ~20–35 € |
 | CPU | Quad-core 1GHz | Single-core 1GHz |
 | RAM | 512MB | 512MB |
 | WiFi | ✓ | ✓ |
+
+**The older Pi Zero WH works perfectly well here.** The workload is a handful of string operations per button press, and the program runs continuously — so nothing is started when a button is pressed, and response time is identical on both. The faster chip only shows up in boot time (~30s vs ~45s), which the startup receipt already covers. Buy whichever you can actually get; the Zero 2 WH is frequently out of stock.
 
 **Where to buy (Germany/EU):**
 - [Berrybase.de](https://www.berrybase.de) — usually best prices, ships from Germany

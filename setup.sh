@@ -7,10 +7,18 @@ echo "=== LePetitCafe Setup ==="
 # Paketlisten aktualisieren
 sudo apt-get update -q
 
-# Python-Abhängigkeiten
-sudo apt-get install -y python3-pip python3-rpi.gpio
+# Python-Abhängigkeiten.
+# Pillow, pyserial und pyusb kommen bewusst aus den Paketquellen statt von pip:
+# Auf dem alten Pi Zero (ARMv6) gibt es dafür oft keine fertigen pip-Pakete,
+# dann kompiliert pip minutenlang selbst. Als apt-Paket sind sie sofort da.
+sudo apt-get install -y \
+    python3-pip \
+    python3-rpi.gpio \
+    python3-pil \
+    python3-serial \
+    python3-usb
 
-# Python-Bibliotheken
+# Python-Bibliotheken (findet die apt-Pakete oben bereits vor)
 pip3 install --break-system-packages -r requirements.txt
 
 # Geräterechte: /dev/usb/lp0 gehört root:lp, /dev/ttyUSB0 gehört root:dialout

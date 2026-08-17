@@ -13,23 +13,50 @@ EISSORTEN = [
     "Kokos", "Mint Choc Chip", "Tiramisu",
 ]
 
-MENU = {
-    "Eiskugel (1 Kugel)":    1.20,
-    "Eisbecher klein":        3.50,
-    "Eisbecher groß":         5.50,
-    "Waffeleis (2 Kugeln)":   2.40,
-    "Waffeleis (3 Kugeln)":   3.40,
-    "Eisschokolade":          3.80,
-    "Milchshake Erdbeere":    4.20,
-    "Milchshake Vanille":     4.20,
-    "Spaghettieis":           5.90,
-    "Heiße Waffel m. Eis":    4.50,
-    "Affogato":               3.90,
-    "Kindereisbecher":        3.20,
-    "Limonade":               2.50,
-    "Wasser still":           1.80,
-    "Kakao":                  2.80,
-}
+# (Name, Preis, Kugeln)
+# Kugeln = Anzahl frei wählbarer Eissorten, die auf dem Bon aufgelistet werden.
+#   0 = fertige Kreation oder Verpacktes am Stiel. Bei einem Krokantbecher oder
+#       einem Magnum steht die Sorte ja schon im Namen – da wäre eine zufällige
+#       Sortenliste Unfug.
+KARTE = [
+    # Kugeln und Waffeln
+    ("Eiskugel",              1.20, 1),
+    ("Waffeleis (2 Kugeln)",  2.40, 2),
+    ("Waffeleis (3 Kugeln)",  3.40, 3),
+    ("Heiße Waffel m. Eis",   4.50, 2),
+
+    # Becher zum Selbstzusammenstellen
+    ("Eisbecher klein",       3.50, 2),
+    ("Eisbecher groß",        5.50, 3),
+
+    # Eisbecher-Klassiker
+    ("Spaghettieis",          5.90, 0),
+    ("Krokantbecher",         5.90, 0),
+    ("After Eight Becher",    6.20, 0),
+    ("Schwarzwald Becher",    6.50, 0),
+    ("Bananasplit",           6.20, 0),
+
+    # Für die Kleinen
+    ("Kindereisbecher",       3.20, 1),
+    ("Pinocchio Becher",      4.50, 0),
+    ("Biene Maja Becher",     4.50, 0),
+
+    # Eis am Stiel
+    ("Magnum Schokolade",     2.50, 0),
+    ("Magnum White",          2.50, 0),
+    ("Solero",                2.20, 0),
+    ("Calippo",               1.80, 0),
+    ("Twister",               1.80, 0),
+
+    # Getränke und Süßes
+    ("Eisschokolade",         3.80, 0),
+    ("Milchshake Erdbeere",   4.20, 0),
+    ("Milchshake Vanille",    4.20, 0),
+    ("Affogato",              3.90, 0),
+    ("Limonade",              2.50, 0),
+    ("Wasser still",          1.80, 0),
+    ("Kakao",                 2.80, 0),
+]
 
 KELLNER = ["Anna", "Tom", "Lena", "Felix", "Clara", "Ben"]
 
@@ -38,13 +65,15 @@ def erstelle_bon(drucker):
     bonNr    = random.randint(100, 999)
     tisch    = random.randint(1, 8)
     kellner  = random.choice(KELLNER)
-    anzahl   = random.randint(2, 6)
+    anzahl   = random.randint(3, 7)
 
-    auswahl  = random.sample(list(MENU.items()), k=min(anzahl, len(MENU)))
-    mengen   = [random.randint(1, 2) for _ in auswahl]
-    positionen = [(name, preis, menge) for (name, preis), menge in zip(auswahl, mengen)]
+    auswahl  = random.sample(KARTE, k=min(anzahl, len(KARTE)))
+    positionen = [
+        (name, preis, kugeln, random.randint(1, 2))
+        for name, preis, kugeln in auswahl
+    ]
 
-    summe    = sum(p * m for _, p, m in positionen)
+    summe    = sum(preis * menge for _, preis, _, menge in positionen)
     trinkgeld_pct = random.choice([0, 5, 10])
     trinkgeld = round(summe * trinkgeld_pct / 100, 2)
     gesamt   = summe + trinkgeld
@@ -62,14 +91,13 @@ def erstelle_bon(drucker):
     drucker.text(f"Uhrzeit:  {now.strftime('%H:%M')} Uhr\n")
     drucker.text(layout.divider())
 
-    for name, preis, menge in positionen:
+    for name, preis, kugeln, menge in positionen:
         gesamt_pos = preis * menge
         drucker.text(layout.wrapped(f"{menge}x {name}"))
         drucker.text(f"   {menge} x {preis:.2f}€ = {gesamt_pos:.2f}€\n")
-        # Eissorten-Hinweis wenn relevant
-        if "kugel" in name.lower() or "waffeleis" in name.lower() or "becher" in name.lower():
-            kugeln = random.sample(EISSORTEN, k=min(3, menge * 2))
-            drucker.text(layout.wrapped(f"({', '.join(kugeln)})", indent=3))
+        if kugeln:
+            sorten = random.sample(EISSORTEN, k=min(kugeln * menge, len(EISSORTEN)))
+            drucker.text(layout.wrapped(f"({', '.join(sorten)})", indent=3))
 
     drucker.text(layout.divider("═"))
     drucker.set(bold=True)
