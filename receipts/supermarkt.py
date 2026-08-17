@@ -94,9 +94,9 @@ def _runden_auf_50ct(betrag):
 
 def _sprueche():
     return [
-        "★ Guten Appetit! ★",
-        "★ Schönen Tag noch! ★",
-        "★ Bleiben Sie gesund! ★",
-        "★ Wir freuen uns auf Sie! ★",
-        "★ Danke, kleiner Einkäufer! ★",
+        "* Guten Appetit! *",
+        "* Schönen Tag noch! *",
+        "* Bleiben Sie gesund! *",
+        "* Wir freuen uns auf Sie! *",
+        "* Danke, kleiner Einkäufer! *",
     ]

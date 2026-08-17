@@ -247,7 +247,7 @@ LePetitCafe/
 ├── setup.sh                 # One-time setup script
 ├── lepetitcafe.service      # systemd unit for autostart
 ├── test_receipts.py         # Checks every receipt fits the paper width
-├── simulate_web.py          # Local web simulator (no hardware needed)
+├── preview.py               # Regenerates the two demos below
 ├── simulator.html           # Standalone demo — German
 ├── simulator_en.html        # Standalone demo — English
 ├── docs/
@@ -261,6 +261,20 @@ LePetitCafe/
     ├── icecream.py          # 🇬🇧 THE LITTLE CAFÉ
     └── bistro.py            # 🇬🇧 THE LITTLE BISTRO
 ```
+
+---
+
+## Preview without hardware
+
+```bash
+python3 preview.py
+```
+
+Regenerates `simulator.html` and `simulator_en.html` — standalone pages with 24 sample receipts, three arcade buttons to cycle through them, and no server needed. Open the file in any browser.
+
+The preview is **character-accurate**: it renders in real monospace at exactly `PRINTER_WIDTH` columns, so what you see is what the printer puts out. It also checks every character against the printer's actual code-page profile via `python-escpos` and highlights anything the printer can't represent in red.
+
+That check is worth running after editing any receipt text. Thermal printers don't do Unicode — they switch between 8-bit code pages. Box-drawing characters (`─ ═`), umlauts, `é` and even `€` all work, but decorative symbols like `★ ✿ ✦` have no code page and would silently print as `?`.
 
 ---
 

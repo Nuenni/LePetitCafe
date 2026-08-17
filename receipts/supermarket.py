@@ -93,9 +93,9 @@ def _round_up(amount):
 
 def _phrases():
     return [
-        "★ Bon appétit! ★",
-        "★ Have a wonderful day! ★",
-        "★ Stay healthy! ★",
-        "★ We hope to see you again! ★",
-        "★ Thanks, little shopper! ★",
+        "* Bon appétit! *",
+        "* Have a wonderful day! *",
+        "* Stay healthy! *",
+        "* We hope to see you again! *",
+        "* Thanks, little shopper! *",
     ]
