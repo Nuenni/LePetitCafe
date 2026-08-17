@@ -44,8 +44,8 @@ Every receipt is unique — random items, prices, names, table numbers, timestam
 | Button | Store | Receipt includes |
 |--------|-------|-----------------|
 | 🔴 Red | **PETIT MARCHÉ** (Supermarket) | Groceries, cashier name, change calculation |
-| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Sundaes, ice lollies, flavours, optional tip |
-| 🔵 Blue | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, server, VAT |
+| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Sundaes, ice lollies, chosen flavours |
+| 🔵 Blue | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, VAT, sometimes a tip |
 
 All three end with a barcode and a **scannable QR code** containing a joke or a voucher — see below.
 
@@ -216,14 +216,33 @@ nano config.py
 Set how the printer is connected and how wide the paper is:
 
 ```python
-PRINTER_MODE   = "usb"            # "usb" or "network"
+PRINTER_MODE   = "usb"            # "usb", "serial" or "network"
 PRINTER_DEVICE = "/dev/usb/lp0"   # check with: ls /dev/usb/
 PRINTER_WIDTH  = 42               # 42 for 80mm paper, 32 for 58mm
+LANGUAGE       = "en"             # "de" or "en"
 
 GPIO_SUPERMARKT  = 17
 GPIO_EISCAFE     = 27
 GPIO_RESTAURANT  = 22
 ```
+
+### Step 3b — Your own names (optional)
+
+The receipts name a cashier and a server. Out of the box those are generic placeholders — because `config.py` is in a public repository and **real names, especially children's names, don't belong there.**
+
+For anything personal, create a `config_local.py` instead. It's listed in `.gitignore`, so it stays on your device and can never be committed by accident:
+
+```bash
+cp config_local.py.example config_local.py
+nano config_local.py
+```
+
+```python
+STAFF_NAMES = ["Anna", "Ben", "Charlie"]   # your kids
+LANGUAGE    = "de"                          # German receipts
+```
+
+Anything you put there overrides `config.py`; anything you leave out keeps its default. The same file is the right place for your printer's IP address or any other detail that's nobody else's business.
 
 ### Step 4 — Run setup
 
@@ -255,7 +274,8 @@ Le Petit Café now starts automatically every time the Pi is powered on.
 ```
 LePetitCafe/
 ├── main.py                  # GPIO listener, print dispatcher
-├── config.py                # ← Set printer IP and GPIO pins here
+├── config.py                # ← Printer, GPIO pins, language
+├── config_local.py.example  # ← Template for personal settings (gitignored)
 ├── requirements.txt         # python-escpos, RPi.GPIO
 ├── setup.sh                 # One-time setup script
 ├── lepetitcafe.service      # systemd unit for autostart

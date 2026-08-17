@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 STORE_NAME = "THE LITTLE MARKET"
 SLOGAN     = "Fresh. Tasty. Affordable."
@@ -37,7 +38,6 @@ ITEMS = [
     ("Shampoo",             2.59,  "1 btl."),
 ]
 
-CASHIERS = ["Emily", "Max", "Sophie", "Lucas", "Mia", "Jonas"]
 
 # Goes into the QR code on the receipt. ASCII only, see layout.codes().
 QR_MESSAGES = [
@@ -54,7 +54,7 @@ def erstelle_bon(printer):
     items  = random.sample(ITEMS, k=random.randint(4, 9))
     total  = sum(i[1] for i in items)
     tax    = total * 0.19
-    name   = random.choice(CASHIERS)
+    name   = random.choice(config.STAFF_NAMES)
     rec_no = random.randint(1000, 9999)
     till   = random.randint(1, 4)
 

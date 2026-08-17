@@ -42,3 +42,28 @@ DEBOUNCE_SECONDS = 3
 # Praktisch als Ersatz für eine Bereitschafts-LED: Papier kommt raus = Pi ist
 # hochgefahren und die Knöpfe reagieren.
 PRINT_READY_RECEIPT = True
+
+# ─── Sprache ──────────────────────────────────────────────────────────────
+# "de" = deutsche Bons, "en" = englische Bons
+LANGUAGE = "en"
+
+# ─── Namen ────────────────────────────────────────────────────────────────
+# Erscheinen als Kassierer/in und Bedienung auf den Bons.
+#
+# Eigene Namen – etwa die der eigenen Kinder – gehören NICHT hierher!
+# Diese Datei liegt im öffentlichen Repository. Lege stattdessen eine
+# config_local.py an (Vorlage: config_local.py.example). Die ist per
+# .gitignore ausgeschlossen und bleibt auf deinem Gerät.
+STAFF_NAMES = [
+    "Anna", "Tom", "Lena", "Felix", "Clara",
+    "Ben", "Marie", "Paul", "Mia", "Jonas",
+]
+
+
+# ─── Lokale Anpassungen ───────────────────────────────────────────────────
+# Muss ganz am Ende stehen, damit config_local.py alles hierüber überschreiben
+# kann. Fehlt die Datei, bleibt es bei den Vorgaben oben.
+try:
+    from config_local import *          # noqa: F401,F403
+except ImportError:
+    pass

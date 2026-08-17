@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 STORE_NAME = "THE LITTLE CAFÉ"
 SLOGAN     = "Ice Cream · Waffles · Dreams"
@@ -57,7 +58,6 @@ MENU = [
     ("Hot Cocoa",              2.80, 0),
 ]
 
-STAFF = ["Anna", "Tom", "Lena", "Felix", "Clara", "Ben"]
 
 # Goes into the QR code on the receipt. ASCII only, see layout.codes().
 QR_MESSAGES = [
@@ -73,7 +73,7 @@ def erstelle_bon(printer):
     now     = datetime.now()
     rec_no  = random.randint(100, 999)
     table   = random.randint(1, 8)
-    server  = random.choice(STAFF)
+    server  = random.choice(config.STAFF_NAMES)
     count   = random.randint(3, 7)
 
     selection = random.sample(MENU, k=min(count, len(MENU)))
@@ -83,9 +83,6 @@ def erstelle_bon(printer):
     ]
 
     subtotal  = sum(price * qty for _, price, _, qty in positions)
-    tip_pct   = random.choice([0, 5, 10])
-    tip       = round(subtotal * tip_pct / 100, 2)
-    total     = subtotal + tip
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
@@ -109,13 +106,8 @@ def erstelle_bon(printer):
             printer.text(layout.wrapped(f"({', '.join(chosen)})", indent=3))
 
     printer.text(layout.divider("═"))
-    printer.set(bold=True)
-    printer.text(layout.row("Subtotal", layout.money(subtotal)))
-    printer.set(bold=False)
-    if tip_pct > 0:
-        printer.text(layout.row(f"Tip {tip_pct}%", layout.money(tip)))
     printer.set(bold=True, double_height=True)
-    printer.text(layout.row("TOTAL", layout.money(total)))
+    printer.text(layout.row("TOTAL", layout.money(subtotal)))
     printer.set(bold=False, double_height=False)
     printer.text(layout.divider())
     printer.set(align="center")

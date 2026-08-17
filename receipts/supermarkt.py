@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 LADEN_NAME = "PETIT MARCHÉ"
 SLOGAN     = "Frisch. Lecker. Günstig."
@@ -37,7 +38,6 @@ SORTIMENT = [
     ("Shampoo",             2.49,  "1 Fl."),
 ]
 
-KASSIERER = ["Emilia", "Max", "Sophie", "Lukas", "Mia", "Jonas"]
 
 # Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
 QR_NACHRICHTEN = [
@@ -54,7 +54,7 @@ def erstelle_bon(drucker):
     items  = random.sample(SORTIMENT, k=random.randint(4, 9))
     summe  = sum(i[1] for i in items)
     mwst   = summe * 0.19
-    name   = random.choice(KASSIERER)
+    name   = random.choice(config.STAFF_NAMES)
     bonNr  = random.randint(1000, 9999)
     kasse  = random.randint(1, 4)
 

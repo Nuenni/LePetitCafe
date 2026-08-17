@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+
+# Persönliche Anpassungen: echte Namen, Sprache, Drucker-IP.
+# Diese Datei darf NICHT ins öffentliche Repository.
+config_local.py

@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 LADEN_NAME = "LE PETIT CAFÉ"
 SLOGAN     = "Eis · Waffeln · Träume"
@@ -58,7 +59,6 @@ KARTE = [
     ("Kakao",                 2.80, 0),
 ]
 
-KELLNER = ["Anna", "Tom", "Lena", "Felix", "Clara", "Ben"]
 
 # Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
 QR_NACHRICHTEN = [
@@ -74,7 +74,7 @@ def erstelle_bon(drucker):
     now      = datetime.now()
     bonNr    = random.randint(100, 999)
     tisch    = random.randint(1, 8)
-    kellner  = random.choice(KELLNER)
+    kellner  = random.choice(config.STAFF_NAMES)
     anzahl   = random.randint(3, 7)
 
     auswahl  = random.sample(KARTE, k=min(anzahl, len(KARTE)))
@@ -84,9 +84,6 @@ def erstelle_bon(drucker):
     ]
 
     summe    = sum(preis * menge for _, preis, _, menge in positionen)
-    trinkgeld_pct = random.choice([0, 5, 10])
-    trinkgeld = round(summe * trinkgeld_pct / 100, 2)
-    gesamt   = summe + trinkgeld
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
@@ -110,13 +107,8 @@ def erstelle_bon(drucker):
             drucker.text(layout.wrapped(f"({', '.join(sorten)})", indent=3))
 
     drucker.text(layout.divider("═"))
-    drucker.set(bold=True)
-    drucker.text(layout.row("Zwischensumme", layout.money(summe)))
-    drucker.set(bold=False)
-    if trinkgeld_pct > 0:
-        drucker.text(layout.row(f"Trinkgeld {trinkgeld_pct}%", layout.money(trinkgeld)))
     drucker.set(bold=True, double_height=True)
-    drucker.text(layout.row("GESAMT", layout.money(gesamt)))
+    drucker.text(layout.row("GESAMT", layout.money(summe)))
     drucker.set(bold=False, double_height=False)
 
     drucker.text(layout.divider())

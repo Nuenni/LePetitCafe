@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from . import layout
+import config
 
 LADEN_NAME = "LE PETIT BISTRO"
 SLOGAN     = "Bon appétit!"
@@ -45,7 +46,6 @@ GETRAENKE = [
     ("Milch",                  1.80),
 ]
 
-KELLNER = ["Marie", "Luca", "Hannah", "Noah", "Emma", "Paul", "Lea", "Tim"]
 
 # Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
 QR_NACHRICHTEN = [
@@ -62,7 +62,7 @@ def erstelle_bon(drucker):
     bonNr   = random.randint(1, 99)
     tisch   = random.randint(1, 12)
     pers    = random.randint(2, 5)
-    kellner = random.choice(KELLNER)
+    kellner = random.choice(config.STAFF_NAMES)
 
     bestellung = []
 
@@ -86,6 +86,13 @@ def erstelle_bon(drucker):
 
     summe = sum(p for _, p in bestellung)
     mwst  = summe * 0.07  # Restaurant: 7% MwSt auf Speisen
+
+    # Trinkgeld für die Bedienung. Die doppelte 0 sorgt dafür, dass etwa
+    # jeder zweite Bon ohne auskommt – sonst wäre es keine nette Geste mehr,
+    # sondern Routine.
+    trinkgeld_pct = random.choice([0, 0, 5, 10])
+    trinkgeld = round(summe * trinkgeld_pct / 100, 2)
+    gesamt = summe + trinkgeld
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
@@ -113,10 +120,15 @@ def erstelle_bon(drucker):
     drucker.text(layout.row("SUMME", layout.money(summe)))
     drucker.set(bold=False)
     drucker.text(layout.row("darin MwSt. 7%", layout.money(mwst)))
+    if trinkgeld_pct:
+        drucker.text(layout.row(f"Trinkgeld {trinkgeld_pct}%", layout.money(trinkgeld)))
+        drucker.set(bold=True)
+        drucker.text(layout.row("GESAMT", layout.money(gesamt)))
+        drucker.set(bold=False)
     drucker.text(layout.divider())
 
-    gezahlt = _runden_auf_50ct(summe)
-    rueck   = gezahlt - summe
+    gezahlt = _runden_auf_50ct(gesamt)
+    rueck   = gezahlt - gesamt
     drucker.text(layout.row("Gegeben (Bar)", layout.money(gezahlt)))
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("RUECKGELD", layout.money(rueck)))

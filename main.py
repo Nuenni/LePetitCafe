@@ -13,7 +13,19 @@ import RPi.GPIO as GPIO
 from escpos.printer import File, Network, Serial
 
 import config
-from receipts import layout, supermarkt, eiscafe, restaurant
+from receipts import layout
+
+# Welche Bon-Sprache gedruckt wird, steht in config.LANGUAGE. Die Generatoren
+# haben in beiden Sprachen dieselbe Schnittstelle, deshalb reicht es, hier das
+# passende Trio auszuwählen.
+if config.LANGUAGE == "de":
+    from receipts import supermarkt as welt_markt
+    from receipts import eiscafe as welt_eis
+    from receipts import restaurant as welt_bistro
+else:
+    from receipts import supermarket as welt_markt
+    from receipts import icecream as welt_eis
+    from receipts import bistro as welt_bistro
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,9 +35,9 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 SCHALTFLÄCHEN = {
-    config.GPIO_SUPERMARKT:  ("Supermarkt",  supermarkt.erstelle_bon),
-    config.GPIO_EISCAFE:     ("Eiscafé",     eiscafe.erstelle_bon),
-    config.GPIO_RESTAURANT:  ("Restaurant",  restaurant.erstelle_bon),
+    config.GPIO_SUPERMARKT:  ("Supermarkt",  welt_markt.erstelle_bon),
+    config.GPIO_EISCAFE:     ("Eiscafé",     welt_eis.erstelle_bon),
+    config.GPIO_RESTAURANT:  ("Restaurant",  welt_bistro.erstelle_bon),
 }
 
 _letzter_druck: dict[int, float] = {}

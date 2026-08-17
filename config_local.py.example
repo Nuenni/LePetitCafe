@@ -1,0 +1,22 @@
+# Persönliche Anpassungen — Vorlage
+#
+# Kopieren und umbenennen:
+#     cp config_local.py.example config_local.py
+#
+# config_local.py steht in .gitignore und landet damit nie im Repository.
+# Hier gehören alle Angaben rein, die niemanden sonst etwas angehen:
+# echte Namen, die IP des eigenen Druckers, WLAN-Details.
+#
+# Alles, was hier steht, überschreibt die Vorgaben aus config.py.
+# Weglassen ist erlaubt — was fehlt, bleibt auf dem Standardwert.
+
+
+# Namen der Kinder als Kassierer/in und Bedienung auf den Bons
+STAFF_NAMES = ["Name1", "Name2", "Name3"]
+
+# Sprache der Bons: "de" oder "en"
+LANGUAGE = "de"
+
+# Falls der Drucker im Netzwerk hängt statt am USB-Kabel
+# PRINTER_MODE = "network"
+# PRINTER_IP   = "192.168.1.42"
