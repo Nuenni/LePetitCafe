@@ -128,10 +128,79 @@ class VorschauDrucker:
     def close(self):
         pass
 
+    def qr(self, content, **_):
+        self.zeilen.append({"grafik": qr_bild(content), "art": "qr",
+                            "titel": content})
+
+    def barcode(self, code, bc, **_):
+        self.zeilen.append({"grafik": barcode_bild(code), "art": "bc",
+                            "titel": code})
+
+
+# ── Codes als echte, scanbare Bilder ──────────────────────────────────────
+#
+# Bewusst PNG statt SVG: Ein QR-Code ist eine Punktmatrix. Als SVG braucht er
+# mehrere tausend <rect>-Elemente und rund 15 KB, als PNG mit einem Pixel je
+# Modul nur ein paar hundert Byte. Hochskaliert wird per CSS mit
+# image-rendering: pixelated, dadurch bleiben die Kanten scharf.
+
+def _als_png(pixel: list[list[int]], breite: int, hoehe: int) -> str:
+    """Baut aus einer 0/1-Matrix ein data:-URI mit 1 Pixel je Modul."""
+    try:
+        from PIL import Image
+    except ImportError:                                       # pragma: no cover
+        return ""
+    import base64, io
+
+    bild = Image.new("1", (breite, hoehe), 1)          # 1 = weiß
+    bild.putdata([0 if p else 1 for reihe in pixel for p in reihe])
+    puffer = io.BytesIO()
+    bild.save(puffer, format="PNG", optimize=True)
+    roh = base64.b64encode(puffer.getvalue()).decode("ascii")
+    return f"data:image/png;base64,{roh}"
+
+
+def qr_bild(text: str) -> str:
+    """
+    Erzeugt einen echten QR-Code. In der Vorschau ist er tatsächlich mit dem
+    Handy scanbar – so lässt sich vor dem ersten Druck prüfen, ob der Inhalt
+    stimmt und ob er sauber gelesen wird.
+    """
+    try:
+        import qrcode
+    except ImportError:                                       # pragma: no cover
+        return ""
+
+    q = qrcode.QRCode(border=2, box_size=1,
+                      error_correction=qrcode.constants.ERROR_CORRECT_M)
+    q.add_data(text)
+    q.make(fit=True)
+    matrix = [[1 if m else 0 for m in reihe] for reihe in q.get_matrix()]
+    return _als_png(matrix, len(matrix), len(matrix))
+
+
+def barcode_bild(code: str) -> str:
+    """Erzeugt einen echten CODE39-Barcode, gleiche Codierung wie im Drucker."""
+    try:
+        from barcode import Code39
+    except ImportError:                                       # pragma: no cover
+        return ""
+
+    # add_checksum=False passt zu python-escpos, das ebenfalls keine
+    # Prüfziffer anhängt.
+    bits = Code39(code, add_checksum=False).build()[0]
+    return _als_png([[1 if b == "1" else 0 for b in bits]], len(bits), 1)
+
 
 # ── HTML-Erzeugung ────────────────────────────────────────────────────────
 
 def zeile_zu_html(zeile: dict, druckbar) -> str:
+    if "grafik" in zeile:
+        beschriftung = html.escape(zeile["titel"])
+        return (f'<div class="{zeile["art"]}block">'
+                f'<img class="{zeile["art"]}" src="{zeile["grafik"]}" '
+                f'alt="{beschriftung}" title="{beschriftung}"></div>')
+
     stuecke = []
     for ch in zeile["text"]:
         sicher = html.escape(ch)
@@ -156,7 +225,7 @@ def bon_erzeugen(modul, druckbar) -> tuple[str, int]:
     modul.erstelle_bon(p)
     html_zeilen = [zeile_zu_html(z, druckbar) for z in p.zeilen]
     fehler = sum(
-        1 for z in p.zeilen for ch in z["text"]
+        1 for z in p.zeilen if "text" in z for ch in z["text"]
         if ch != " " and not druckbar(ch)
     )
     return "\n".join(html_zeilen), fehler
@@ -365,6 +434,14 @@ body {
   background: var(--warn); color: var(--papier);
   font-weight: 700; border-radius: 2px;
 }
+/* QR- und Barcode: echte, scanbare Codes. Ein Pixel je Modul, per CSS
+   hochskaliert – pixelated haelt die Kanten scharf statt sie zu verwischen. */
+.qrblock, .bcblock { display: flex; justify-content: center; }
+.qrblock { margin: 8px 0 2px; }
+.bcblock { margin: 6px 0 2px; }
+.qr, .bc { image-rendering: pixelated; }
+.qr { width: 26ch; height: auto; }
+.bc { width: 34ch; height: 32px; }
 
 .fuss {
   display: flex; flex-wrap: wrap; justify-content: center;

@@ -44,10 +44,23 @@ Every receipt is unique — random items, prices, names, table numbers, timestam
 | Button | Store | Receipt includes |
 |--------|-------|-----------------|
 | 🔴 Red | **PETIT MARCHÉ** (Supermarket) | Groceries, cashier name, change calculation |
-| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Ice cream flavours, table number, optional tip |
+| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Sundaes, ice lollies, flavours, optional tip |
 | 🔵 Blue | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, server, VAT |
 
+All three end with a barcode and a **scannable QR code** containing a joke or a voucher — see below.
+
 Receipts are available in **German** (default) and **English** — see `receipts/` folder.
+
+### The QR code
+
+Every receipt ends with a barcode and a QR code. The QR doesn't point at a website — **the message is encoded in the code itself**, so scanning it with any phone camera shows the text instantly, with no internet connection and nothing to host or keep running.
+
+Each play world has its own pool of jokes and vouchers:
+
+> *VOUCHER: You're head chef today. What are we having?*
+> *Waiter, there's a fly in my soup! — Don't worry, the spider is coming.*
+
+Edit `QR_MESSAGES` in any receipt file to add your own. Keep them ASCII — the printer generates the QR in hardware and passes the bytes through as given, so plain ASCII reads identically on every scanner while accented characters depend on the device.
 
 ---
 
