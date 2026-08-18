@@ -30,10 +30,15 @@ PRINTER_PORT = 9100
 PRINTER_WIDTH = 42
 
 # ─── Knöpfe ───────────────────────────────────────────────────────────────
-# GPIO-Pinnummern (BCM-Nummerierung) der drei Arcade-Knöpfe
-GPIO_SUPERMARKT  = 17
-GPIO_EISCAFE     = 27
-GPIO_RESTAURANT  = 22
+# GPIO-Pinnummern (BCM-Nummerierung) der sechs Arcade-Knöpfe.
+# 23/24/25 sind wie 17/27/22 reine GPIO-Pins ohne Sonderfunktion, sie kommen
+# also keinem anderen Anschluss in die Quere.
+GPIO_SUPERMARKT    = 17   # rot
+GPIO_EISCAFE       = 27   # blau
+GPIO_RESTAURANT    = 22   # grün
+GPIO_BUS           = 23   # gelb
+GPIO_KINO          = 24   # schwarz
+GPIO_RESERVIERUNG  = 25   # weiß
 
 # Mindestpause zwischen zwei Drucken (Sekunden), damit kein Endlosrollen entsteht
 DEBOUNCE_SECONDS = 3
@@ -58,6 +63,10 @@ STAFF_NAMES = [
     "Anna", "Tom", "Lena", "Felix", "Clara",
     "Ben", "Marie", "Paul", "Mia", "Jonas",
 ]
+
+# Gästenamen für Tischreservierungen und Kinotickets. Gleiche Regel wie oben:
+# echte Namen gehören in config_local.py, nicht hierher.
+GUEST_NAMES = ["Berger", "Hoffmann", "Krüger", "Baumann", "Winter"]
 
 
 # ─── Lokale Anpassungen ───────────────────────────────────────────────────

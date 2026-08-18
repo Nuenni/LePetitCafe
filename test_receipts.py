@@ -13,7 +13,10 @@ import sys
 
 import config
 
-MODULE = ["supermarkt", "eiscafe", "restaurant", "supermarket", "icecream", "bistro"]
+MODULE = [
+    "supermarkt", "eiscafe", "restaurant", "bus", "kino", "reservierung",
+    "supermarket", "icecream", "bistro", "transit", "cinema", "reservation",
+]
 BREITEN = [42, 32]   # 80mm und 58mm Papier
 DURCHLAEUFE = 50
 
