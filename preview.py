@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Erzeugt die Bon-Vorschau als eigenständige HTML-Datei.
+Generates the receipt preview as a standalone HTML file.
 
     python3 preview.py
 
-Schreibt simulator.html (deutsch) und simulator_en.html (englisch).
+Writes simulator.html (German) and simulator_en.html (English).
 
-Die Vorschau ist zeichengenau: Sie rendert in echter Monospace-Schrift mit
-config.PRINTER_WIDTH Zeichen pro Zeile, und sie prüft jedes Zeichen gegen das
-Codepage-Profil des echten Druckers. Was der Drucker nicht darstellen kann,
-wird rot markiert – so sieht man Probleme hier statt erst auf Papier.
+The preview is character-accurate: it renders in real monospace font at
+config.PRINTER_WIDTH characters per line, and checks every character against
+the real printer's code-page profile. Whatever the printer can't display
+gets highlighted in red - so problems show up here instead of on paper.
 """
 
 import argparse
@@ -69,15 +69,15 @@ TEXTE = {
 }
 
 
-# ── Zeichenprüfung gegen das echte Druckerprofil ──────────────────────────
+# ── Character check against the real printer profile ──────────────────────
 
 def _pruefer():
     """
-    Liefert eine Funktion, die sagt, ob der Drucker ein Zeichen darstellen kann.
+    Returns a function that says whether the printer can display a character.
 
-    Nutzt das echte Codepage-Profil aus python-escpos. Ist die Bibliothek nicht
-    installiert (etwa auf einem Rechner ohne Druckeranbindung), prüfen wir
-    nicht und behandeln alles als druckbar.
+    Uses the real code-page profile from python-escpos. If the library isn't
+    installed (e.g. on a machine with no printer connection), we skip the
+    check and treat everything as printable.
     """
     try:
         from escpos.magicencode import Encoder
@@ -85,7 +85,7 @@ def _pruefer():
         codepages = get_profile("TM-T20II").codePages
         encoder = Encoder({name: slot for slot, name in codepages.items()})
     except Exception as exc:                                  # pragma: no cover
-        print(f"  Hinweis: keine Zeichenprüfung ({exc})", file=sys.stderr)
+        print(f"  Note: no character check ({exc})", file=sys.stderr)
         return lambda ch: True
 
     zwischenspeicher: dict[str, bool] = {}
@@ -98,10 +98,10 @@ def _pruefer():
     return druckbar
 
 
-# ── Mock-Drucker ──────────────────────────────────────────────────────────
+# ── Mock printer ────────────────────────────────────────────────────────────
 
 class VorschauDrucker:
-    """Sammelt die Ausgabe statt sie zu drucken, inklusive Schriftattributen."""
+    """Collects the output instead of printing it, including font attributes."""
 
     def __init__(self):
         self.zeilen: list[dict] = []
@@ -119,7 +119,7 @@ class VorschauDrucker:
 
     def text(self, txt: str):
         teile = txt.split("\n")
-        # Ein abschliessendes \n beendet die Zeile, es ist keine Leerzeile.
+        # A trailing \n ends the line, it's not an empty line.
         if teile and teile[-1] == "":
             teile.pop()
         for zeile in teile:
@@ -143,22 +143,22 @@ class VorschauDrucker:
                             "titel": code})
 
 
-# ── Codes als echte, scanbare Bilder ──────────────────────────────────────
+# ── Codes as real, scannable images ────────────────────────────────────────
 #
-# Bewusst PNG statt SVG: Ein QR-Code ist eine Punktmatrix. Als SVG braucht er
-# mehrere tausend <rect>-Elemente und rund 15 KB, als PNG mit einem Pixel je
-# Modul nur ein paar hundert Byte. Hochskaliert wird per CSS mit
-# image-rendering: pixelated, dadurch bleiben die Kanten scharf.
+# Deliberately PNG instead of SVG: a QR code is a dot matrix. As SVG it needs
+# several thousand <rect> elements and around 15 KB; as PNG with one pixel
+# per module, just a few hundred bytes. Scaled up via CSS with
+# image-rendering: pixelated, which keeps the edges sharp.
 
 def _als_png(pixel: list[list[int]], breite: int, hoehe: int) -> str:
-    """Baut aus einer 0/1-Matrix ein data:-URI mit 1 Pixel je Modul."""
+    """Builds a data: URI with one pixel per module from a 0/1 matrix."""
     try:
         from PIL import Image
     except ImportError:                                       # pragma: no cover
         return ""
     import base64, io
 
-    bild = Image.new("1", (breite, hoehe), 1)          # 1 = weiß
+    bild = Image.new("1", (breite, hoehe), 1)          # 1 = white
     bild.putdata([0 if p else 1 for reihe in pixel for p in reihe])
     puffer = io.BytesIO()
     bild.save(puffer, format="PNG", optimize=True)
@@ -168,9 +168,9 @@ def _als_png(pixel: list[list[int]], breite: int, hoehe: int) -> str:
 
 def qr_bild(text: str) -> str:
     """
-    Erzeugt einen echten QR-Code. In der Vorschau ist er tatsächlich mit dem
-    Handy scanbar – so lässt sich vor dem ersten Druck prüfen, ob der Inhalt
-    stimmt und ob er sauber gelesen wird.
+    Generates a real QR code. In the preview it's actually scannable with a
+    phone - so you can check before the first print whether the content is
+    right and reads cleanly.
     """
     try:
         import qrcode
@@ -186,19 +186,19 @@ def qr_bild(text: str) -> str:
 
 
 def barcode_bild(code: str) -> str:
-    """Erzeugt einen echten CODE39-Barcode, gleiche Codierung wie im Drucker."""
+    """Generates a real CODE39 barcode, same encoding as on the printer."""
     try:
         from barcode import Code39
     except ImportError:                                       # pragma: no cover
         return ""
 
-    # add_checksum=False passt zu python-escpos, das ebenfalls keine
-    # Prüfziffer anhängt.
+    # add_checksum=False matches python-escpos, which also doesn't append
+    # a check digit.
     bits = Code39(code, add_checksum=False).build()[0]
     return _als_png([[1 if b == "1" else 0 for b in bits]], len(bits), 1)
 
 
-# ── HTML-Erzeugung ────────────────────────────────────────────────────────
+# ── HTML generation ─────────────────────────────────────────────────────────
 
 def zeile_zu_html(zeile: dict, druckbar) -> str:
     if "grafik" in zeile:
@@ -371,8 +371,8 @@ body {
 }
 .unter { color: var(--gedaempft); font-size: .9rem; }
 
-/* Bedienpult mit den sechs Arcade-Knöpfen. Grid statt flex, damit auf
-   schmalen Handy-Screens sauber in zwei Dreier-Reihen umgebrochen wird. */
+/* Control panel with the six arcade buttons. Grid instead of flex, so it
+   wraps cleanly into two rows of three on narrow phone screens. */
 .pult {
   display: grid; grid-template-columns: repeat(3, 1fr);
   justify-items: center; gap: 20px clamp(12px, 4vw, 28px);
@@ -404,7 +404,7 @@ body {
 .knopf.aktiv .beschriftung { color: var(--text); }
 .tipp { text-align: center; font-size: .78rem; color: var(--gedaempft); margin-top: -14px; }
 
-/* Thermopapier */
+/* Thermal paper */
 .papierhalter { display: flex; justify-content: center; }
 .papier {
   background: var(--papier); color: var(--tinte);
@@ -428,7 +428,7 @@ body {
 @keyframes raus { from { transform: translateY(-14px); opacity: 0 } to { transform: none; opacity: 1 } }
 @media (prefers-reduced-motion: reduce) { .papier.raus { animation: none } }
 
-/* Der Bon selbst: echte Monospace, exakt so breit wie das Papier */
+/* The receipt itself: real monospace, exactly as wide as the paper */
 .bon {
   font-family: var(--mono);
   font-size: clamp(9.5px, 2.6vw, 13px);
@@ -448,8 +448,8 @@ body {
   background: var(--warn); color: var(--papier);
   font-weight: 700; border-radius: 2px;
 }
-/* QR- und Barcode: echte, scanbare Codes. Ein Pixel je Modul, per CSS
-   hochskaliert – pixelated haelt die Kanten scharf statt sie zu verwischen. */
+/* QR code and barcode: real, scannable codes. One pixel per module, scaled
+   up via CSS - pixelated keeps the edges sharp instead of blurring them. */
 .qrblock, .bcblock { display: flex; justify-content: center; }
 .qrblock { margin: 8px 0 2px; }
 .bcblock { margin: 6px 0 2px; }
@@ -477,9 +477,9 @@ body {
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed", type=int,
-                        help="Zufallsstartwert, damit die Ausgabe reproduzierbar ist")
-    parser.add_argument("--artifact", metavar="PFAD",
-                        help="zusätzlich eine Fassung ohne <html>-Rahmen schreiben")
+                        help="random seed, so the output is reproducible")
+    parser.add_argument("--artifact", metavar="PATH",
+                        help="also write a version without the <html> wrapper")
     args = parser.parse_args()
 
     if args.seed is not None:
@@ -492,20 +492,20 @@ def main() -> int:
         with open(datei, "w", encoding="utf-8") as f:
             f.write(markup)
         gesamt += fehler
-        print(f"  {datei:<20} {BONS_PRO_WELT * len(welten)} Bons, "
-              f"{len(markup) // 1024} KB, {fehler} nicht druckbare Zeichen")
+        print(f"  {datei:<20} {BONS_PRO_WELT * len(welten)} receipts, "
+              f"{len(markup) // 1024} KB, {fehler} unprintable character(s)")
 
     if args.artifact:
         markup, _ = seite_bauen("de", WELTEN_DE, nur_inhalt=True)
         with open(args.artifact, "w", encoding="utf-8") as f:
             f.write(markup)
-        print(f"  {args.artifact:<20} (Fassung für Artifact)")
+        print(f"  {args.artifact:<20} (artifact version)")
 
     if gesamt:
-        print(f"\n  ⚠ {gesamt} Zeichen kann der Drucker nicht darstellen "
-              f"(im Bon rot markiert).")
+        print(f"\n  ⚠ {gesamt} character(s) the printer can't display "
+              f"(highlighted in red on the receipt).")
     else:
-        print("\n  ✓ Alle Zeichen sind auf dem Drucker darstellbar.")
+        print("\n  ✓ All characters are displayable on the printer.")
     return 0
 
 

@@ -1,12 +1,11 @@
 """
-Layout-Helfer für alle Bon-Generatoren.
+Layout helpers shared by all receipt generators.
 
-Damit dieselben Generatoren auf 58-mm- und 80-mm-Druckern gut aussehen, wird
-die Zeilenbreite nicht mehr fest verdrahtet, sondern aus config.PRINTER_WIDTH
-gelesen.
+So the same generators look right on both 58mm and 80mm printers, the line
+width isn't hardcoded but read from config.PRINTER_WIDTH.
 
-Wichtig: In doppelt breiter Schrift (double_width=True) passen nur halb so
-viele Zeichen in eine Zeile. Dafür gibt es den Schalter `big=True`.
+Important: in double-width font (double_width=True), only half as many
+characters fit on a line. That's what the `big=True` switch is for.
 """
 
 import json
@@ -23,18 +22,18 @@ _VOUCHERS = json.loads(_VOUCHERS_PATH.read_text(encoding="utf-8"))
 _VOUCHER_PAGES = {"de": "gutschein.html", "en": "voucher.html"}
 _DEMO_BASE_URL = "https://nuenni.github.io/LePetitCafe"
 
-# Mindestabstand zwischen Text und Preis. Zwei Leerzeichen, damit der
-# HTML-Simulator Preiszeilen zuverlässig als solche erkennt.
+# Minimum gap between text and price. Two spaces, so the HTML simulator can
+# reliably recognize price lines as such.
 _MIN_GAP = 2
 
 
 def width(big: bool = False) -> int:
-    """Verfügbare Zeichen pro Zeile."""
+    """Available characters per line."""
     return config.PRINTER_WIDTH // 2 if big else config.PRINTER_WIDTH
 
 
 def divider(char: str = "─") -> str:
-    """Trennlinie über die volle Papierbreite."""
+    """Divider line spanning the full paper width."""
     return char * width() + "\n"
 
 
@@ -44,12 +43,12 @@ def money(betrag: float) -> str:
 
 def row(label: str, value: str, big: bool = False, indent: int = 0) -> str:
     """
-    Zeile mit Text links und Wert rechtsbündig am Papierrand.
+    Line with text on the left and a value right-aligned to the paper edge.
 
-    Werte wie Namenslisten ("Mia, Ben & Lea") kommen aus config_local.py
-    und sind damit nicht vorhersehbar lang. Passt label+value nicht mehr in
-    eine Zeile, geht das Label auf eine eigene Zeile und der Wert wird
-    darunter umgebrochen, statt die Papierbreite zu überschreiten.
+    Values like name lists ("Mia, Ben & Lea") come from config_local.py and
+    are therefore unpredictably long. If label+value no longer fit on one
+    line, the label gets its own line and the value wraps below it, instead
+    of overflowing the paper width.
     """
     lueckenbreite = width(big) - indent - len(label) - len(value)
     if lueckenbreite < _MIN_GAP:
@@ -65,18 +64,18 @@ def row(label: str, value: str, big: bool = False, indent: int = 0) -> str:
 
 
 def wrapped(text: str, indent: int = 0) -> str:
-    """Fließtext auf die Papierbreite umbrechen statt ihn abzuschneiden."""
+    """Wrap running text to the paper width instead of cutting it off."""
     zeilen = textwrap.wrap(text, width=width() - indent) or [""]
     return "".join(" " * indent + zeile + "\n" for zeile in zeilen)
 
 
 def voucher_url(language: str) -> str:
     """
-    Liefert einen Link auf eine zufällige Gutschein-Seite (gutschein.html/
-    voucher.html), gespeist aus vouchers.json. Landet im QR-Code statt
-    reinem Text, damit das Handy eine schön gestaltete Seite öffnet statt
-    (wie bei "GUTSCHEIN: ..."-Text) fälschlich ein URL-Schema zu vermuten
-    oder (wie bei reinem Text) eine Google-Suche vorzuschlagen.
+    Returns a link to a random voucher page (gutschein.html/voucher.html),
+    fed from vouchers.json. Goes into the QR code instead of plain text, so
+    the phone opens a nicely styled page instead of (like with "VOUCHER: ..."
+    text) mistaking it for a URL scheme, or (like with plain text) suggesting
+    a Google search.
     """
     gutschein = random.choice(_VOUCHERS)
     seite = _VOUCHER_PAGES[language]
@@ -85,9 +84,9 @@ def voucher_url(language: str) -> str:
 
 def joke_url(language: str, witz: str) -> str:
     """
-    Liefert einen Link, der denselben Witz-Text schön am Handy anzeigt statt
-    ihn als reinen Text in den QR-Code zu schreiben. Der Text reist direkt
-    per URL-Parameter mit, braucht also keinen Eintrag in vouchers.json.
+    Returns a link that displays the same joke text nicely on a phone,
+    instead of writing it into the QR code as plain text. The text travels
+    directly via the URL parameter, so it needs no entry in vouchers.json.
     """
     seite = _VOUCHER_PAGES[language]
     return f"{_DEMO_BASE_URL}/{seite}?w={urllib.parse.quote(witz)}"
@@ -95,23 +94,24 @@ def joke_url(language: str, witz: str) -> str:
 
 def codes(drucker, qr_text: str, bon_nummer: str, hinweis: str) -> None:
     """
-    Schließt den Bon mit QR-Code und Barcode ab.
+    Closes out the receipt with a QR code and barcode.
 
-    Der QR-Code enthält den Text direkt – kein Link, kein Server. Wer ihn mit
-    dem Handy scannt, sieht die Nachricht sofort, auch ohne Internet.
+    qr_text is usually a link from voucher_url()/joke_url() that opens a
+    styled page, but can also be plain text - scanning it then shows the
+    message right away, even with no internet connection.
 
-    Der Text ist bewusst frei von Umlauten: Der Drucker erzeugt den QR-Code
-    selbst (native=True) und übernimmt die Bytes so, wie wir sie schicken.
-    Reines ASCII liest jeder Scanner gleich, bei Umlauten hängt das Ergebnis
-    vom Gerät ab.
+    Keep any plain-text content ASCII: the printer generates the QR code
+    itself (native=True) and passes the bytes through as given. Plain ASCII
+    reads identically on every scanner, while accented characters depend on
+    the device.
 
-    Nicht jeder ESC/POS-Drucker beherrscht QR-Codes. Kann er es nicht, soll
-    der Bon trotzdem komplett rauskommen – deshalb der Auffangblock.
+    Not every ESC/POS printer supports QR codes. If it can't, the receipt
+    should still print completely - hence the fallback block.
 
-    Wichtig: kein center=True hier. python-escpos wirft bei nativer
-    QR-Darstellung (native=True) dafür ein NotImplementedError – die
-    Zentrierung übernimmt in diesem Modus ohnehin der Drucker selbst,
-    gesteuert über das drucker.set(align="center") direkt darüber.
+    Important: no center=True here. python-escpos raises a NotImplementedError
+    for that in native QR mode (native=True) - centering in this mode is
+    handled by the printer itself anyway, driven by the
+    drucker.set(align="center") right above.
     """
     drucker.set(align="center", bold=False, double_height=False,
                 double_width=False)
@@ -122,12 +122,12 @@ def codes(drucker, qr_text: str, bon_nummer: str, hinweis: str) -> None:
         drucker.barcode(bon_nummer, "CODE39", height=48, width=2,
                         pos="BELOW", align_ct=True)
     except Exception:
-        # Drucker ohne Code-Unterstuetzung: wenigstens die Nummer lesbar.
+        # Printer without code support: at least keep the number readable.
         drucker.text(bon_nummer + "\n")
 
 
 def item(name: str, betrag: float, indent: int = 0) -> str:
-    """Artikelzeile. Zu lange Namen werden auf die Papierbreite gekürzt."""
+    """Item line. Names that are too long get truncated to the paper width."""
     wert = money(betrag)
     platz_fuer_namen = width() - indent - len(wert) - _MIN_GAP
     return row(name[:platz_fuer_namen], wert, indent=indent)

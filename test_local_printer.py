@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 """
-Lokaler Drucktest über USB – für den eigenen Rechner (Mac/Linux), nicht den Pi.
+Local print test over USB - for your own computer (Mac/Linux), not the Pi.
 
     python3 test_local_printer.py
 
-Simuliert die sechs Knöpfe als Text-Menü und druckt über den direkt am Rechner
-angeschlossenen USB-Drucker. Nutzt dieselben Bon-Generatoren wie main.py auf
-dem Pi – nur die Verbindung zum Drucker ist anders (escpos.printer.Usb statt
-File('/dev/usb/lp0'), weil es auf dem Mac kein /dev/usb/lp0 gibt).
+Simulates the six buttons as a text menu and prints over the USB printer
+connected directly to your computer. Uses the same receipt generators as
+main.py on the Pi - only the connection to the printer differs
+(escpos.printer.Usb instead of File('/dev/usb/lp0'), because there's no
+/dev/usb/lp0 on a Mac).
 
-Vorbereitung:
+Setup:
     pip3 install python-escpos pyusb
-    brew install libusb        # nur macOS
+    brew install libusb        # macOS only
 
-Falls der Drucker nicht gefunden wird, obwohl er eingesteckt ist: sehr
-wahrscheinlich hat macOS ihn automatisch als Systemdrucker eingebunden und
-hält ihn dadurch belegt. Abhilfe: Systemeinstellungen → Drucker & Scanner →
-den Drucker dort entfernen, dann dieses Skript erneut versuchen.
+If the printer isn't found even though it's plugged in: most likely macOS
+auto-registered it as a system printer and is holding it busy. Fix: System
+Settings -> Printers & Scanners -> remove the printer there, then try this
+script again.
 """
 
 import sys
@@ -39,8 +40,8 @@ else:
     from receipts import cinema as welt_kino
     from receipts import reservation as welt_reservierung
 
-# Epson TM-T20II. Andere Epson-Modelle haben meist dieselbe idVendor, aber
-# eine andere idProduct – im Zweifel auf dem Mac nachsehen mit:
+# Epson TM-T20II. Other Epson models usually share the same idVendor but a
+# different idProduct - if in doubt, check on the Mac with:
 #   system_profiler SPUSBDataType | grep -A 5 -i epson
 ID_VENDOR = 0x04B8
 ID_PRODUCT = 0x0E15
@@ -61,25 +62,25 @@ def _drucker_verbinden():
 
 
 def main() -> int:
-    print("Verbinde mit dem Drucker …")
+    print("Connecting to the printer …")
     try:
         drucker = _drucker_verbinden()
     except Exception as exc:
-        print(f"\n✗ Drucker nicht erreichbar: {exc}\n")
-        print("Prüfen:")
-        print("  - Drucker eingeschaltet und per USB verbunden?")
-        print("  - pip3 install python-escpos pyusb   (+ brew install libusb auf dem Mac)")
-        print("  - macOS: Systemeinstellungen → Drucker & Scanner → Drucker dort entfernen,")
-        print("    falls er dort automatisch als Systemdrucker eingebunden wurde.")
+        print(f"\n✗ Printer unreachable: {exc}\n")
+        print("Check:")
+        print("  - Is the printer switched on and connected via USB?")
+        print("  - pip3 install python-escpos pyusb   (+ brew install libusb on the Mac)")
+        print("  - macOS: System Settings -> Printers & Scanners -> remove the printer there,")
+        print("    if it got auto-registered as a system printer.")
         return 1
 
-    print(f"✓ Verbunden (idVendor=0x{ID_VENDOR:04X}, idProduct=0x{ID_PRODUCT:04X})\n")
+    print(f"✓ Connected (idVendor=0x{ID_VENDOR:04X}, idProduct=0x{ID_PRODUCT:04X})\n")
 
     while True:
-        print("Welchen Knopf drücken?")
+        print("Which button?")
         for taste, name, _ in WELTEN:
             print(f"  {taste}) {name}")
-        print("  q) Beenden")
+        print("  q) Quit")
 
         wahl = input("> ").strip().lower()
         if wahl in ("q", "quit", "exit"):
@@ -87,19 +88,19 @@ def main() -> int:
 
         treffer = next((w for w in WELTEN if w[0] == wahl), None)
         if not treffer:
-            print("Ungültige Eingabe.\n")
+            print("Invalid input.\n")
             continue
 
         _, name, bon_fn = treffer
-        print(f"Drucke: {name} …")
+        print(f"Printing: {name} …")
         try:
             bon_fn(drucker)
-            print("✓ gedruckt\n")
+            print("✓ printed\n")
         except Exception as exc:
-            print(f"✗ Druckfehler: {exc}\n")
+            print(f"✗ Print error: {exc}\n")
 
     drucker.close()
-    print("Bis dann!")
+    print("See you!")
     return 0
 
 

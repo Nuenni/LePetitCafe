@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-LePetitCafe – Kassenbon-Drucker für Kinder.
-Drei Knöpfe → drei Spielszenarien → Thermodrucker.
+LePetitCafe - receipt printer for kids.
+Six buttons -> six play scenarios -> thermal printer.
 """
 
 import random
@@ -16,9 +16,9 @@ from escpos.printer import File, Network, Serial
 import config
 from receipts import kaffeepause, layout
 
-# Welche Bon-Sprache gedruckt wird, steht in config.LANGUAGE. Die Generatoren
-# haben in beiden Sprachen dieselbe Schnittstelle, deshalb reicht es, hier das
-# passende Trio auszuwählen.
+# Which receipt language gets printed is set in config.LANGUAGE. The
+# generators have the same interface in both languages, so it's enough to
+# pick the matching set here.
 if config.LANGUAGE == "de":
     from receipts import supermarkt as welt_markt
     from receipts import eiscafe as welt_eis
@@ -52,16 +52,16 @@ SCHALTFLÄCHEN = {
 
 _letzter_druck: dict[int, float] = {}
 
-# Für die Kaffeepause-Tastenkombination (siehe _combo_pin_bearbeiten):
-# Startzeitpunkt jedes gerade gehaltenen Kombi-Knopfs, und ob der Kaffeebon
-# für den aktuellen Kombi-Griff schon gedruckt wurde (verhindert, dass beim
-# Loslassen des zweiten Knopfs zusätzlich noch ein normaler Bon kommt).
+# For the coffee-break button combo (see _combo_pin_bearbeiten): the time
+# each combo button has currently been held down, and whether the coffee
+# receipt has already been printed for the current combo hold (prevents an
+# extra normal receipt from also firing when the second button is released).
 _combo_gehalten_seit: dict[int, float] = {}
 _combo_kaffee_ausgeloest = False
 
 
 def _drucker_verbinden():
-    """Verbindung zum Drucker – per USB, RS232 oder über das Heimnetz."""
+    """Connect to the printer - over USB, RS232, or the home network."""
     if config.PRINTER_MODE == "network":
         return Network(config.PRINTER_IP, port=config.PRINTER_PORT, timeout=5)
     if config.PRINTER_MODE == "serial":
@@ -75,7 +75,7 @@ def _drucker_verbinden():
 
 
 def _druckerziel() -> str:
-    """Beschreibt fürs Log, wohin gedruckt wird."""
+    """Describes where output is going, for the log."""
     if config.PRINTER_MODE == "network":
         return f"{config.PRINTER_IP}:{config.PRINTER_PORT}"
     if config.PRINTER_MODE == "serial":
@@ -85,8 +85,8 @@ def _druckerziel() -> str:
 
 def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
     """
-    Beim Systemstart ist der USB-Drucker oft noch nicht fertig erkannt.
-    Deshalb ein paar Mal in Ruhe nachfassen, statt sofort aufzugeben.
+    At boot, the USB printer is often not enumerated yet. So retry a few
+    times instead of giving up right away.
     """
     for versuch in range(1, versuche + 1):
         try:
@@ -94,7 +94,7 @@ def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
             return True
         except Exception as exc:
             log.warning(
-                "Drucker noch nicht bereit (%d/%d): %s", versuch, versuche, exc
+                "Printer not ready yet (%d/%d): %s", versuch, versuche, exc
             )
             time.sleep(pause)
     return False
@@ -102,8 +102,8 @@ def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
 
 def _bereit_bon(drucker) -> None:
     """
-    Kleiner Startbon. Ersetzt eine Bereitschafts-LED: Sobald Papier
-    rauskommt, weiß das Kind, dass die Knöpfe jetzt reagieren.
+    Small startup receipt. Stands in for a ready LED: once paper comes out,
+    the kid knows the buttons are live.
     """
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text("LE PETIT CAFÉ\n")
@@ -124,14 +124,14 @@ def _bereit_bon(drucker) -> None:
 
 
 def _drucken(name: str, bon_fn) -> None:
-    log.info("Bon wird gedruckt: %s", name)
+    log.info("Printing receipt: %s", name)
     try:
         drucker = _drucker_verbinden()
         bon_fn(drucker)
         drucker.close()
-        log.info("Bon gedruckt: %s", name)
+        log.info("Receipt printed: %s", name)
     except Exception as exc:
-        log.error("Druckfehler (%s): %s", name, exc)
+        log.error("Print error (%s): %s", name, exc)
 
 
 def _knopf_gedrueckt(pin: int) -> None:
@@ -144,7 +144,7 @@ def _knopf_gedrueckt(pin: int) -> None:
 
     if (config.COFFEE_RANDOM_EVERY
             and random.random() < 1 / config.COFFEE_RANDOM_EVERY):
-        _drucken("Kaffeepause (Zufall)", kaffeepause.erstelle_bon)
+        _drucken("Coffee break (random)", kaffeepause.erstelle_bon)
         return
 
     _drucken(name, bon_fn)
@@ -152,12 +152,12 @@ def _knopf_gedrueckt(pin: int) -> None:
 
 def _combo_pin_bearbeiten(pin: int) -> None:
     """
-    Eigener Handler für die beiden Kaffeepause-Kombi-Knöpfe (config.
-    COFFEE_COMBO). Registriert für steigende UND fallende Flanke (GPIO.BOTH),
-    weil wir - anders als bei den anderen vier Knöpfen - wissen müssen, wie
-    lange und ob beide gleichzeitig gehalten wurden. RPi.GPIO liefert dabei
-    keine Flankenrichtung mit, deshalb steht sie hier über den aktuellen
-    Pegel fest: LOW (wegen PUD_UP) = gerade gedrückt, HIGH = losgelassen.
+    Dedicated handler for the two coffee-break combo buttons (config.
+    COFFEE_COMBO). Registered for both rising AND falling edges (GPIO.BOTH),
+    because - unlike the other four buttons - we need to know how long and
+    whether both were held down at the same time. RPi.GPIO doesn't pass the
+    edge direction along, so it's determined here from the current level:
+    LOW (because of PUD_UP) = just pressed, HIGH = released.
     """
     global _combo_kaffee_ausgeloest
 
@@ -168,15 +168,16 @@ def _combo_pin_bearbeiten(pin: int) -> None:
         _combo_gehalten_seit[pin] = jetzt
         return
 
-    # Losgelassen.
+    # Released.
     start = _combo_gehalten_seit.pop(pin, jetzt)
     dauer = jetzt - start
     andere_pin = next(p for p in config.COFFEE_COMBO if p != pin)
     andere_noch_gehalten = andere_pin in _combo_gehalten_seit
 
     if _combo_kaffee_ausgeloest:
-        # Der Kaffeebon kam schon beim Loslassen des ersten Kombi-Knopfs -
-        # dieser zweite Release gehört noch dazu, löst aber nichts mehr aus.
+        # The coffee receipt already fired when the first combo button was
+        # released - this second release still belongs to it, but no
+        # longer triggers anything itself.
         _combo_kaffee_ausgeloest = False
         return
 
@@ -184,11 +185,11 @@ def _combo_pin_bearbeiten(pin: int) -> None:
         _combo_kaffee_ausgeloest = True
         if jetzt - _letzter_druck.get(pin, 0) >= config.DEBOUNCE_SECONDS:
             _letzter_druck[pin] = jetzt
-            _drucken("Kaffeepause (Kombi)", kaffeepause.erstelle_bon)
+            _drucken("Coffee break (combo)", kaffeepause.erstelle_bon)
         return
 
-    # Kein langer gemeinsamer Griff, nur ein normaler kurzer Druck auf einen
-    # der beiden Kombi-Knöpfe.
+    # Not a long joint hold, just a normal short press on one of the two
+    # combo buttons.
     _knopf_gedrueckt(pin)
 
 
@@ -198,10 +199,10 @@ def main() -> None:
     for pin in SCHALTFLÄCHEN:
         GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         if pin in config.COFFEE_COMBO:
-            # Beide Flanken nötig, um Haltedauer und Gleichzeitigkeit zu
-            # erkennen (siehe _combo_pin_bearbeiten). Kürzeres bouncetime,
-            # damit ein schneller normaler Tipp nicht die Loslass-Flanke
-            # verschluckt - Mehrfachdrucke fängt ohnehin DEBOUNCE_SECONDS ab.
+            # Both edges are needed to detect hold duration and simultaneity
+            # (see _combo_pin_bearbeiten). Shorter bouncetime so a quick
+            # normal tap doesn't swallow the release edge - repeated prints
+            # are caught by DEBOUNCE_SECONDS anyway.
             GPIO.add_event_detect(
                 pin,
                 GPIO.BOTH,
@@ -216,10 +217,10 @@ def main() -> None:
                 bouncetime=300,
             )
 
-    log.info("LePetitCafe gestartet – Drucker: %s (%d Zeichen breit)",
+    log.info("LePetitCafe started - printer: %s (%d columns wide)",
              _druckerziel(), config.PRINTER_WIDTH)
     log.info(
-        "Pins: Supermarkt=GPIO%d  Eiscafé=GPIO%d  Restaurant=GPIO%d  "
+        "Pins: Supermarkt=GPIO%d  Eiscafe=GPIO%d  Restaurant=GPIO%d  "
         "Bus/Taxi=GPIO%d  KinderKino=GPIO%d  Reservierung=GPIO%d",
         config.GPIO_SUPERMARKT,
         config.GPIO_EISCAFE,
@@ -236,10 +237,10 @@ def main() -> None:
                 _bereit_bon(drucker)
                 drucker.close()
             except Exception as exc:
-                log.error("Startbon fehlgeschlagen: %s", exc)
+                log.error("Startup receipt failed: %s", exc)
         else:
-            log.error("Drucker nicht erreichbar – Knöpfe funktionieren trotzdem, "
-                      "sobald der Drucker da ist.")
+            log.error("Printer unreachable - buttons will still work once "
+                      "the printer is available.")
 
     try:
         while True:
@@ -248,7 +249,7 @@ def main() -> None:
         pass
     finally:
         GPIO.cleanup()
-        log.info("LePetitCafe beendet.")
+        log.info("LePetitCafe stopped.")
 
 
 if __name__ == "__main__":
