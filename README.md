@@ -370,6 +370,10 @@ PRs welcome! Ideas:
 
 ---
 
+## Disclaimer
+
+This is a non-commercial hobby project, built for fun and for making kids happy at home — nothing here is sold or offered as a service. Some receipts mention real brand and character names (Magnum, Calippo, Solero, Twister, After Eight, Biene Maja, Pinocchio...) purely because kids recognize them and it makes the pretend-play more fun. This project has no affiliation with, endorsement from, or connection to any of those trademark holders — all trademarks and copyrights belong to their respective owners. If you're one of them and this bothers you: it's a printer in someone's playroom, not a business. Open an issue and it'll get sorted out.
+
 ## License
 
 MIT — free to use, modify and share. Have fun building it!
