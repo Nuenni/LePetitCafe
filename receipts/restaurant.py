@@ -47,11 +47,9 @@ GETRAENKE = [
 ]
 
 
-# Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
-QR_NACHRICHTEN = [
-    "GUTSCHEIN: Du bist heute der Chefkoch. Was gibt es?",
-    "GUTSCHEIN: Einmal Tisch decken erlassen.",
-    "GUTSCHEIN: Heute darfst du den Nachtisch zuerst essen.",
+# Landet im QR-Code auf dem Bon, wenn kein Gutschein-Link dran ist. Ohne
+# Umlaute, siehe layout.codes().
+WITZE = [
     "Kellner, eine Fliege in der Suppe! - Keine Sorge, die Spinne kommt gleich.",
     "Warum wurde die Tomate rot? Sie hat den Salat beim Umziehen gesehen!",
     "Was macht ein Koch, wenn er wuetend ist? Er brutzelt vor sich hin.",
@@ -140,8 +138,9 @@ def erstelle_bon(drucker):
     drucker.text("bald wieder zu sehen!\n")
     drucker.text("\n")
     drucker.text(f"{LADEN_NAME}\n")
-    layout.codes(drucker, random.choice(QR_NACHRICHTEN),
-                 f"LPB{bonNr:05d}", "Scann mich!")
+    qr_inhalt = (layout.voucher_url("de") if random.random() < 0.5
+                 else layout.joke_url("de", random.choice(WITZE)))
+    layout.codes(drucker, qr_inhalt, f"LPB{bonNr:05d}", "Scann mich!")
     drucker.cut()
 
 def _runden_auf_50ct(betrag):

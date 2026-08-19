@@ -30,10 +30,7 @@ FAHRKARTEN = [
 
 WAGENFARBEN = ["gelb", "creme", "silber", "schwarz"]
 
-QR_NACHRICHTEN = [
-    "GUTSCHEIN: Du darfst heute den Weg bestimmen.",
-    "GUTSCHEIN: Einmal vorne beim Fahrer sitzen!",
-    "GUTSCHEIN: Diese Fahrt geht aufs Haus.",
+WITZE = [
     "Warum sitzt der Bus nie? Er hat schon genug Sitze!",
     "Was ist gelb und faehrt im Kreis? Ein Taxi im Kreisverkehr.",
     "Wie kommt ein Igel in den Bus? Durch die Tuer, wie alle anderen.",
@@ -65,7 +62,9 @@ def _fuss(drucker, hinweis: str, nummer: str) -> None:
     drucker.set(align="center")
     drucker.text("\n")
     drucker.text(layout.wrapped(hinweis))
-    layout.codes(drucker, random.choice(QR_NACHRICHTEN), nummer, "Scann mich!")
+    qr_inhalt = (layout.voucher_url("de") if random.random() < 0.5
+                 else layout.joke_url("de", random.choice(WITZE)))
+    layout.codes(drucker, qr_inhalt, nummer, "Scann mich!")
     drucker.cut()
 
 

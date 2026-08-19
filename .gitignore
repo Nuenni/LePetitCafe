@@ -4,3 +4,6 @@ __pycache__/
 # Persönliche Anpassungen: echte Namen, Sprache, Drucker-IP.
 # Diese Datei darf NICHT ins öffentliche Repository.
 config_local.py
+
+# Session-Übergabe: kann echte Namen/Details enthalten, ist nur für dich.
+HANDOVER.md

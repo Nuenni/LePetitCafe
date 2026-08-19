@@ -29,10 +29,7 @@ ANLAESSE_KLEIN = [None, None, None, None, "Einfach so"]
 ANLAESSE_GROSS = ["Geburtstag", "Geburtstag", "Familienfeier",
                   "Erster Schultag", None]
 
-QR_NACHRICHTEN = [
-    "GUTSCHEIN: Du darfst dir den Platz am Tisch aussuchen.",
-    "GUTSCHEIN: Heute bestellst du fuer alle.",
-    "GUTSCHEIN: Einmal Nachtisch extra, weil reserviert wurde.",
+WITZE = [
     "Warum kommt der Tisch nie zu spaet? Er ist immer gedeckt.",
     "Was sagt der Stuhl zum Tisch? Nichts, Moebel reden nicht.",
     "Wie nennt man einen reservierten Tisch? Belegt und gluecklich.",
@@ -110,6 +107,7 @@ def erstelle_bon(drucker):
     drucker.set(align="center")
     drucker.text(layout.wrapped("Wir freuen uns auf Sie!"))
     drucker.text(layout.wrapped("Bitte 10 Minuten vorher da sein."))
-    layout.codes(drucker, random.choice(QR_NACHRICHTEN),
-                 f"RES{nummer:05d}", "Scann mich!")
+    qr_inhalt = (layout.voucher_url("de") if random.random() < 0.5
+                 else layout.joke_url("de", random.choice(WITZE)))
+    layout.codes(drucker, qr_inhalt, f"RES{nummer:05d}", "Scann mich!")
     drucker.cut()

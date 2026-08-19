@@ -47,11 +47,9 @@ DRINKS = [
 ]
 
 
-# Goes into the QR code on the receipt. ASCII only, see layout.codes().
-QR_MESSAGES = [
-    "VOUCHER: You're head chef today. What are we having?",
-    "VOUCHER: Skip laying the table, just this once.",
-    "VOUCHER: Pudding before dinner. Today only.",
+# Goes into the QR code on the receipt when there's no voucher link.
+# ASCII only, see layout.codes().
+JOKES = [
     "Waiter, there's a fly in my soup! - Don't worry, the spider is coming.",
     "Why did the tomato blush? It saw the salad dressing!",
     "What does an angry chef do? He simmers down.",
@@ -130,8 +128,9 @@ def erstelle_bon(printer):
     printer.text("We hope to see you again soon!\n")
     printer.text("\n")
     printer.text(f"{STORE_NAME}\n")
-    layout.codes(printer, random.choice(QR_MESSAGES),
-                 f"LPB{rec_no:05d}", "Scan me!")
+    qr_content = (layout.voucher_url("en") if random.random() < 0.5
+                  else layout.joke_url("en", random.choice(JOKES)))
+    layout.codes(printer, qr_content, f"LPB{rec_no:05d}", "Scan me!")
     printer.cut()
 
 def _section(printer, order, category, title):

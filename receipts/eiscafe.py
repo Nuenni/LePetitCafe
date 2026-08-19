@@ -60,11 +60,9 @@ KARTE = [
 ]
 
 
-# Landet im QR-Code auf dem Bon. Ohne Umlaute, siehe layout.codes().
-QR_NACHRICHTEN = [
-    "GUTSCHEIN: Eine Kugel Eis mehr als sonst. Versprochen!",
-    "GUTSCHEIN: Du darfst die Eissorte fuer alle aussuchen.",
-    "GUTSCHEIN: Einmal Streusel obendrauf, ohne zu fragen.",
+# Landet im QR-Code auf dem Bon, wenn kein Gutschein-Link dran ist. Ohne
+# Umlaute, siehe layout.codes().
+WITZE = [
     "Was macht ein Schneemann im Sommer? Eine Pfuetze.",
     "Warum hat Eis nie schlechte Laune? Es ist immer gut gekuehlt!",
     "Wie nennt man ein Eis, das Witze erzaehlt? Einen Scherzbecher!",
@@ -120,6 +118,7 @@ def erstelle_bon(drucker):
     drucker.text("Wir wünschen einen\n")
     drucker.text("wunderschönen Tag!\n")
     drucker.text("* * *\n")
-    layout.codes(drucker, random.choice(QR_NACHRICHTEN),
-                 f"LPC{bonNr:05d}", "Scann mich!")
+    qr_inhalt = (layout.voucher_url("de") if random.random() < 0.5
+                 else layout.joke_url("de", random.choice(WITZE)))
+    layout.codes(drucker, qr_inhalt, f"LPC{bonNr:05d}", "Scann mich!")
     drucker.cut()
