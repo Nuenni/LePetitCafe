@@ -74,12 +74,17 @@ def codes(drucker, qr_text: str, bon_nummer: str, hinweis: str) -> None:
 
     Nicht jeder ESC/POS-Drucker beherrscht QR-Codes. Kann er es nicht, soll
     der Bon trotzdem komplett rauskommen – deshalb der Auffangblock.
+
+    Wichtig: kein center=True hier. python-escpos wirft bei nativer
+    QR-Darstellung (native=True) dafür ein NotImplementedError – die
+    Zentrierung übernimmt in diesem Modus ohnehin der Drucker selbst,
+    gesteuert über das drucker.set(align="center") direkt darüber.
     """
     drucker.set(align="center", bold=False, double_height=False,
                 double_width=False)
     drucker.text("\n")
     try:
-        drucker.qr(qr_text, size=6, native=True, center=True)
+        drucker.qr(qr_text, size=6, native=True)
         drucker.text(hinweis + "\n\n")
         drucker.barcode(bon_nummer, "CODE39", height=48, width=2,
                         pos="BELOW", align_ct=True)
