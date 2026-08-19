@@ -195,9 +195,11 @@ Internal pull-up resistors are enabled. Each button simply connects its GPIO pin
 ### Step 1 — Flash the Raspberry Pi
 
 1. Download [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
-2. Flash **Raspberry Pi OS Lite (64-bit)**
+2. Flash **Raspberry Pi OS Lite** — pick the bitness that matches your board:
+   - **Pi Zero W / Zero WH** (single-core, ARMv6) → **32-bit**. This board cannot boot a 64-bit image at all — the Imager won't stop you from picking the wrong one, so double-check.
+   - **Pi Zero 2 W / Zero 2 WH** (quad-core, ARMv8) → 64-bit works, but 32-bit runs fine too.
 3. In the Imager settings (⚙️): set WiFi credentials, enable SSH, set username `pi`
-4. Insert SD card, power on, wait ~30 seconds
+4. Insert SD card, power on — first boot takes ~30s on a Zero 2, ~45s on the original Zero
 
 ### Step 2 — Connect via SSH
 
