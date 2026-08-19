@@ -29,7 +29,7 @@ WELTEN_DE = [
     ("eiscafe",      "Eiscafé",      "LE PETIT CAFÉ",    "blau",    eiscafe),
     ("restaurant",   "Restaurant",   "LE PETIT BISTRO",  "gruen",   restaurant),
     ("bus",          "Bus/Taxi",     "LE PETIT EXPRESS", "gelb",    bus),
-    ("kino",         "Kino",         "CINÉMA PETIT",     "schwarz", kino),
+    ("kino",         "KinderKino",   "KINDERKINO",       "schwarz", kino),
     ("reservierung", "Reservierung", "LE PETIT BISTRO",  "weiss",   reservierung),
 ]
 WELTEN_EN = [

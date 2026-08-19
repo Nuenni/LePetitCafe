@@ -45,7 +45,7 @@ SCHALTFLÄCHEN = {
     config.GPIO_EISCAFE:       ("Eiscafé",       welt_eis.erstelle_bon),
     config.GPIO_RESTAURANT:    ("Restaurant",    welt_bistro.erstelle_bon),
     config.GPIO_BUS:           ("Bus/Taxi",      welt_bus.erstelle_bon),
-    config.GPIO_KINO:          ("Kino",          welt_kino.erstelle_bon),
+    config.GPIO_KINO:          ("KinderKino",    welt_kino.erstelle_bon),
     config.GPIO_RESERVIERUNG:  ("Reservierung",  welt_reservierung.erstelle_bon),
 }
 
@@ -110,7 +110,7 @@ def _bereit_bon(drucker) -> None:
     drucker.text("BLAU    Eiscafé\n")
     drucker.text("GRUEN   Restaurant\n")
     drucker.text("GELB    Bus/Taxi\n")
-    drucker.text("SCHWARZ Kino\n")
+    drucker.text("SCHWARZ KinderKino\n")
     drucker.text("WEISS   Reservierung\n")
     drucker.cut()
 
@@ -149,7 +149,7 @@ def main() -> None:
              _druckerziel(), config.PRINTER_WIDTH)
     log.info(
         "Pins: Supermarkt=GPIO%d  Eiscafé=GPIO%d  Restaurant=GPIO%d  "
-        "Bus/Taxi=GPIO%d  Kino=GPIO%d  Reservierung=GPIO%d",
+        "Bus/Taxi=GPIO%d  KinderKino=GPIO%d  Reservierung=GPIO%d",
         config.GPIO_SUPERMARKT,
         config.GPIO_EISCAFE,
         config.GPIO_RESTAURANT,

@@ -20,13 +20,12 @@ WISHES = [
     "Facing the kitchen",
 ]
 
-OCCASIONS = [
-    None, None, None,          # usually no special occasion
-    "Birthday",
-    "Family celebration",
-    "First day at school",
-    "Just because",
-]
+# Small groups (fit inside GUEST_FIRST_NAMES) usually have no occasion –
+# that's just an ordinary meal out. Bigger groups almost always do, otherwise
+# it's odd why six people suddenly showed up.
+OCCASIONS_SMALL = [None, None, None, None, "Just because"]
+OCCASIONS_LARGE = ["Birthday", "Birthday", "Family celebration",
+                   "First day at school", None]
 
 QR_MESSAGES = [
     "VOUCHER: You choose your seat at the table.",
@@ -38,18 +37,38 @@ QR_MESSAGES = [
 ]
 
 
+def _list_names(names: list[str]) -> str:
+    """['Mia', 'Ben', 'Lea'] -> 'Mia, Ben & Lea'"""
+    if len(names) == 1:
+        return names[0]
+    return ", ".join(names[:-1]) + f" & {names[-1]}"
+
+
 def erstelle_bon(printer):
     now = datetime.now()
     number = random.randint(100, 999)
     table = random.randint(1, 24)
-    people = random.randint(2, 6)
+
+    # Weighted towards small: most reservations are the family itself, a big
+    # group of friends is the exception, not the rule.
+    people = random.choices([2, 3, 4, 5, 6], weights=[3, 3, 2, 1, 1], k=1)[0]
     seat = random.randint(1, people)
+
+    # If the head count matches the configured first names, name the guests
+    # instead of just counting them – see config.GUEST_FIRST_NAMES.
+    names = config.GUEST_FIRST_NAMES
+    if people <= len(names):
+        guests = random.sample(names, k=people)
+        booked_for = _list_names(guests)
+        occasion = random.choice(OCCASIONS_SMALL)
+    else:
+        booked_for = f"The {random.choice(config.GUEST_NAMES)}s"
+        occasion = random.choice(OCCASIONS_LARGE)
 
     # Reservation falls between today and a week from now
     when = now + timedelta(days=random.randint(0, 7))
     time_slot = random.choice(["12:00", "12:30", "17:30", "18:00",
                                "18:30", "19:00", "19:30"])
-    occasion = random.choice(OCCASIONS)
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")

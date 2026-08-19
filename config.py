@@ -64,9 +64,18 @@ STAFF_NAMES = [
     "Ben", "Marie", "Paul", "Mia", "Jonas",
 ]
 
-# Gästenamen für Tischreservierungen und Kinotickets. Gleiche Regel wie oben:
-# echte Namen gehören in config_local.py, nicht hierher.
+# Nachname für "Familie Müller" auf größeren Reservierungen (siehe
+# GUEST_FIRST_NAMES unten). Gleiche Regel wie oben: echte Namen gehören in
+# config_local.py, nicht hierher.
 GUEST_NAMES = ["Berger", "Hoffmann", "Krüger", "Baumann", "Winter"]
+
+# Vornamen für Tischreservierungen. Passt die gewürfelte Personenzahl genau
+# zur Anzahl dieser Namen (oder ist kleiner), listet der Bon sie namentlich
+# auf – "Für: Mia & Ben" statt nur "Für: Familie Hoffmann". Bei größeren
+# Runden (Geburtstag, Familienfeier) reicht die Liste nicht mehr, dann greift
+# automatisch der Nachname-Fallback oben. Trag hier die eigenen Kinder ein,
+# dann drucken kleine Reservierungen ihre echten Namen.
+GUEST_FIRST_NAMES = ["Mia", "Ben", "Lea"]
 
 
 # ─── Lokale Anpassungen ───────────────────────────────────────────────────

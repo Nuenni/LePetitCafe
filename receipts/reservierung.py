@@ -22,13 +22,12 @@ WUENSCHE = [
     "Blick zur Küche",
 ]
 
-ANLAESSE = [
-    None, None, None,          # meistens ohne besonderen Anlass
-    "Geburtstag",
-    "Familienfeier",
-    "Erster Schultag",
-    "Einfach so",
-]
+# Kleine Runden (passen in GUEST_FIRST_NAMES) meist ohne Anlass – das ist der
+# normale Restaurantbesuch. Größere Runden fast immer mit, sonst wirkt es
+# seltsam, warum plötzlich sechs Leute kommen.
+ANLAESSE_KLEIN = [None, None, None, None, "Einfach so"]
+ANLAESSE_GROSS = ["Geburtstag", "Geburtstag", "Familienfeier",
+                  "Erster Schultag", None]
 
 QR_NACHRICHTEN = [
     "GUTSCHEIN: Du darfst dir den Platz am Tisch aussuchen.",
@@ -40,18 +39,40 @@ QR_NACHRICHTEN = [
 ]
 
 
+def _aufzaehlung(namen: list[str]) -> str:
+    """['Mia', 'Ben', 'Lea'] -> 'Mia, Ben & Lea'"""
+    if len(namen) == 1:
+        return namen[0]
+    return ", ".join(namen[:-1]) + f" & {namen[-1]}"
+
+
 def erstelle_bon(drucker):
     now = datetime.now()
     nummer = random.randint(100, 999)
     tisch = random.randint(1, 24)
-    personen = random.randint(2, 6)
+
+    # Gewichtet Richtung klein: die meisten Reservierungen sind die eigene
+    # Familie, ein großer Freundeskreis ist die Ausnahme, nicht die Regel.
+    personen = random.choices(
+        [2, 3, 4, 5, 6], weights=[3, 3, 2, 1, 1], k=1
+    )[0]
     platz = random.randint(1, personen)
+
+    # Passt die Personenzahl zu den hinterlegten Vornamen, werden die Gäste
+    # namentlich genannt statt nur gezählt – siehe config.GUEST_FIRST_NAMES.
+    namen = config.GUEST_FIRST_NAMES
+    if personen <= len(namen):
+        gaeste = random.sample(namen, k=personen)
+        auf_den_namen = _aufzaehlung(gaeste)
+        anlass = random.choice(ANLAESSE_KLEIN)
+    else:
+        auf_den_namen = f"Fam. {random.choice(config.GUEST_NAMES)}"
+        anlass = random.choice(ANLAESSE_GROSS)
 
     # Reservierung liegt zwischen heute und in einer Woche
     wann = now + timedelta(days=random.randint(0, 7))
     uhrzeit = random.choice(["12:00", "12:30", "17:30", "18:00",
                              "18:30", "19:00", "19:30"])
-    anlass = random.choice(ANLAESSE)
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
@@ -73,8 +94,7 @@ def erstelle_bon(drucker):
     drucker.text(layout.row("Personen", str(personen)))
     drucker.text(layout.divider())
 
-    drucker.text(layout.row("Auf den Namen",
-                            f"Fam. {random.choice(config.GUEST_NAMES)}"))
+    drucker.text(layout.row("Auf den Namen", auf_den_namen))
     drucker.text(layout.row("Tag", f"{WOCHENTAGE[wann.weekday()]}, "
                                    f"{wann.strftime('%d.%m.%Y')}"))
     drucker.text(layout.row("Uhrzeit", f"{uhrzeit} Uhr"))

@@ -65,7 +65,7 @@ def erstelle_bon(drucker):
     summe = ticket_preis * anzahl + sum(p for _, p in snacks)
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
-    drucker.text("CINÉMA PETIT\n")
+    drucker.text("KINDERKINO\n")
     drucker.set(align="center", bold=False, double_height=False,
                 double_width=False)
     drucker.text("*  Film ab!  *\n")
