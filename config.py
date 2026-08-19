@@ -1,107 +1,107 @@
-# ─── Drucker ──────────────────────────────────────────────────────────────
-# "usb"     = Drucker hängt per USB-Kabel am Pi  (empfohlen, braucht kein WLAN)
-# "serial"  = Drucker hat nur RS232, per USB-Nullmodem-Kabel angeschlossen
-# "network" = Drucker hängt per WLAN/LAN im Heimnetz
+# ─── Printer ──────────────────────────────────────────────────────────────
+# "usb"     = printer connects to the Pi via USB cable (recommended, no WiFi needed)
+# "serial"  = printer only has RS232, connected via USB null-modem cable
+# "network" = printer sits on the home network over WiFi/LAN
 PRINTER_MODE = "usb"
 
-# Nur bei PRINTER_MODE = "usb":
-# Gerätedatei des Druckers. Nach dem Einstecken prüfen mit:  ls /dev/usb/
+# Only for PRINTER_MODE = "usb":
+# Device file for the printer. After plugging it in, check with:  ls /dev/usb/
 PRINTER_DEVICE = "/dev/usb/lp0"
 
-# Nur bei PRINTER_MODE = "serial":
-# Gerätedatei des USB-Seriell-Adapters. Prüfen mit:  ls /dev/ttyUSB*
+# Only for PRINTER_MODE = "serial":
+# Device file for the USB-to-serial adapter. Check with:  ls /dev/ttyUSB*
 SERIAL_DEVICE   = "/dev/ttyUSB0"
-# Die Baudrate MUSS zur Einstellung im Drucker passen, sonst kommt Kauderwelsch.
-# Auslesen: Drucker ausschalten, FEED-Taste gedrückt halten, einschalten –
-# er druckt einen Selbsttest mit seinen aktuellen Einstellungen aus.
+# The baud rate MUST match the printer's setting, or you get garbled output.
+# To read it off: switch the printer off, hold the FEED button, switch it on -
+# it prints a self-test page with its current settings.
 SERIAL_BAUDRATE = 38400
-# Hardware-Flusskontrolle. Epson-Bondrucker brauchen das, sonst gehen bei
-# längeren Bons Zeilen verloren, weil der Druckpuffer überläuft.
+# Hardware flow control. Epson receipt printers need this, otherwise longer
+# receipts lose lines because the print buffer overflows.
 SERIAL_DSRDTR   = True
 
-# Nur bei PRINTER_MODE = "network":
+# Only for PRINTER_MODE = "network":
 PRINTER_IP   = "192.168.1.100"
 PRINTER_PORT = 9100
 
-# Zeichen pro Zeile in der Standardschrift (Font A). Modellabhängig – nicht
-# raten, sondern nachsehen mit:
+# Characters per line in the default font (Font A). Model-dependent - don't
+# guess it, look it up with:
 #   python3 -c "from escpos.capabilities import get_profile as g; print(g('TM-T20II').fonts)"
-#   80 mm Papier, Epson TM-T20II          → 48  (72 mm nutzbare Breite)
-#   58 mm Papier (Mini-/Akku-Drucker)     → 32
-# Falls die Trennlinien nicht exakt über die Papierbreite gehen, oder rechts
-# ein auffälliger unbedruckter Rand bleibt: hier korrigieren.
+#   80 mm paper, Epson TM-T20II          -> 48  (72 mm usable width)
+#   58 mm paper (mini/battery printers)  -> 32
+# If the divider lines don't reach exactly across the paper, or there's a
+# noticeable unprinted strip on the right: adjust this here.
 PRINTER_WIDTH = 48
 
-# ─── Knöpfe ───────────────────────────────────────────────────────────────
-# GPIO-Pinnummern (BCM-Nummerierung) der sechs Arcade-Knöpfe.
-# 23/24/25 sind wie 17/27/22 reine GPIO-Pins ohne Sonderfunktion, sie kommen
-# also keinem anderen Anschluss in die Quere.
-GPIO_SUPERMARKT    = 17   # rot
-GPIO_EISCAFE       = 27   # blau
-GPIO_RESTAURANT    = 22   # grün
-GPIO_BUS           = 23   # gelb
-GPIO_KINO          = 24   # schwarz
-GPIO_RESERVIERUNG  = 25   # weiß
+# ─── Buttons ──────────────────────────────────────────────────────────────
+# GPIO pin numbers (BCM numbering) of the six arcade buttons.
+# 23/24/25 are, like 17/27/22, plain GPIO pins with no special function, so
+# they don't conflict with any other connector.
+GPIO_SUPERMARKT    = 17   # red
+GPIO_EISCAFE       = 27   # blue
+GPIO_RESTAURANT    = 22   # green
+GPIO_BUS           = 23   # yellow
+GPIO_KINO          = 24   # black
+GPIO_RESERVIERUNG  = 25   # white
 
-# Mindestpause zwischen zwei Drucken (Sekunden), damit kein Endlosrollen entsteht
+# Minimum pause between two prints (seconds), to avoid endless paper rolling
 DEBOUNCE_SECONDS = 3
 
-# ─── Kaffeepause (geheimer Bon) ─────────────────────────────────────────────
-# Ein kleiner Extra-Bon nur für dich: eine Kaffeebestellung "an Mama", die
-# entweder ganz selten zufällig zwischen den Kinderbons auftaucht, oder gezielt
-# per Tastenkombination. "Mama"/"Papa" sind Rollen, keine echten Namen –
-# gehört also anders als STAFF_NAMES nicht in config_local.py.
+# ─── Coffee break (secret receipt) ─────────────────────────────────────────
+# A small extra receipt just for you: a coffee order "for Mama" that either
+# shows up rarely and randomly between the kids' receipts, or gets triggered
+# deliberately via a button combo. "Mama"/"Papa" are roles, not real names -
+# unlike STAFF_NAMES, this doesn't belong in config_local.py.
 COFFEE_FOR = "Mama"
 
-# Ungefähr jeder wievielte Bon zufällig ein Kaffeebon statt des gewählten
-# Spiels ist. None = deaktiviert den Zufallsanteil komplett.
+# Roughly every how many-th receipt is a random coffee receipt instead of the
+# chosen game. None = disables the random share entirely.
 COFFEE_RANDOM_EVERY = 13
 
-# Diese zwei Knöpfe zusammen ~COFFEE_HOLD_SECONDS lang gedrückt halten löst
-# gezielt den Kaffeebon aus, statt der beiden normalen Spielwelten. Bewusst
-# zwei weit auseinanderliegende Knöpfe (rot + weiß), damit das beim wilden
-# Drauflosdrücken nicht aus Versehen passiert.
+# Holding these two buttons together for ~COFFEE_HOLD_SECONDS deliberately
+# triggers the coffee receipt, instead of the two normal play worlds.
+# Deliberately two buttons far apart from each other (red + white), so this
+# doesn't happen by accident during normal button mashing.
 COFFEE_COMBO = (GPIO_SUPERMARKT, GPIO_RESERVIERUNG)
 COFFEE_HOLD_SECONDS = 1.2
 
-# Beim Start einen kleinen "Bereit"-Bon drucken.
-# Praktisch als Ersatz für eine Bereitschafts-LED: Papier kommt raus = Pi ist
-# hochgefahren und die Knöpfe reagieren.
+# Print a small "ready" receipt on startup.
+# Stands in for a ready LED: paper comes out = the Pi has booted and the
+# buttons are responding.
 PRINT_READY_RECEIPT = True
 
-# ─── Sprache ──────────────────────────────────────────────────────────────
-# "de" = deutsche Bons, "en" = englische Bons
+# ─── Language ─────────────────────────────────────────────────────────────
+# "de" = German receipts, "en" = English receipts
 LANGUAGE = "en"
 
-# ─── Namen ────────────────────────────────────────────────────────────────
-# Erscheinen als Kassierer/in und Bedienung auf den Bons.
+# ─── Names ────────────────────────────────────────────────────────────────
+# Appear as cashier and server on the receipts.
 #
-# Eigene Namen – etwa die der eigenen Kinder – gehören NICHT hierher!
-# Diese Datei liegt im öffentlichen Repository. Lege stattdessen eine
-# config_local.py an (Vorlage: config_local.py.example). Die ist per
-# .gitignore ausgeschlossen und bleibt auf deinem Gerät.
+# Your own names - like your kids' names - do NOT belong here!
+# This file lives in the public repository. Create a config_local.py instead
+# (template: config_local.py.example). It's excluded via .gitignore and
+# stays on your own device.
 STAFF_NAMES = [
     "Anna", "Tom", "Lena", "Felix", "Clara",
     "Ben", "Marie", "Paul", "Mia", "Jonas",
 ]
 
-# Nachname für "Familie Müller" auf größeren Reservierungen (siehe
-# GUEST_FIRST_NAMES unten). Gleiche Regel wie oben: echte Namen gehören in
-# config_local.py, nicht hierher.
+# Last name for "the Mueller family" on larger reservations (see
+# GUEST_FIRST_NAMES below). Same rule as above: real names belong in
+# config_local.py, not here.
 GUEST_NAMES = ["Berger", "Hoffmann", "Krüger", "Baumann", "Winter"]
 
-# Vornamen für Tischreservierungen. Passt die gewürfelte Personenzahl genau
-# zur Anzahl dieser Namen (oder ist kleiner), listet der Bon sie namentlich
-# auf – "Für: Mia & Ben" statt nur "Für: Familie Hoffmann". Bei größeren
-# Runden (Geburtstag, Familienfeier) reicht die Liste nicht mehr, dann greift
-# automatisch der Nachname-Fallback oben. Trag hier die eigenen Kinder ein,
-# dann drucken kleine Reservierungen ihre echten Namen.
+# First names for table reservations. If the randomly rolled party size
+# matches (or is smaller than) the number of names here, the receipt lists
+# them by name - "For: Mia & Ben" instead of just "For: the Hoffmann family".
+# For bigger groups (birthdays, family gatherings) the list isn't enough
+# anymore, and the last-name fallback above kicks in automatically. Put your
+# own kids here, and small reservations will print their real names.
 GUEST_FIRST_NAMES = ["Mia", "Ben", "Lea"]
 
 
-# ─── Lokale Anpassungen ───────────────────────────────────────────────────
-# Muss ganz am Ende stehen, damit config_local.py alles hierüber überschreiben
-# kann. Fehlt die Datei, bleibt es bei den Vorgaben oben.
+# ─── Local overrides ──────────────────────────────────────────────────────
+# Must stay at the very end, so config_local.py can override everything
+# above it. If the file is missing, the defaults above apply.
 try:
     from config_local import *          # noqa: F401,F403
 except ImportError:

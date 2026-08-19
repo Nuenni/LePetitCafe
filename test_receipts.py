@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Prüft alle Bon-Generatoren, ohne dass Hardware angeschlossen sein muss.
+Checks every receipt generator without needing hardware connected.
 
     python3 test_receipts.py
 
-Getestet wird gegen beide Papierbreiten: Keine Zeile darf breiter sein als das
-Papier, sonst bricht der Drucker sie hart um und der Bon sieht zerrissen aus.
-Weil die Bons zufällig erzeugt werden, läuft jeder Generator viele Male.
+Tested against both paper widths: no line may be wider than the paper, or
+the printer hard-wraps it and the receipt looks broken. Since receipts are
+generated randomly, each generator runs many times.
 """
 
 import sys
@@ -18,11 +18,11 @@ MODULE = [
     "supermarket", "icecream", "bistro", "transit", "cinema", "reservation",
     "kaffeepause",
 ]
-BREITEN = [48, 42, 32]   # 80mm (TM-T20II), 80mm (andere Modelle), 58mm Papier
+BREITEN = [48, 42, 32]   # 80mm (TM-T20II), 80mm (other models), 58mm paper
 DURCHLAEUFE = 50
 
-# Bekannte, physikalisch unvermeidbare Ausnahmen: Diese Ladennamen sind länger
-# als die 16 Spalten, die auf 58mm-Papier in Doppelbreite zur Verfügung stehen.
+# Known, physically unavoidable exceptions: these store names are longer
+# than the 16 columns available in double width on 58mm paper.
 BEKANNTE_AUSNAHMEN = {
     (32, "THE LITTLE MARKET"),
     (32, "THE LITTLE BISTRO"),
@@ -30,7 +30,7 @@ BEKANNTE_AUSNAHMEN = {
 
 
 class TextPrinter:
-    """Mock-Drucker: sammelt Zeilen samt Schriftbreite, druckt nichts."""
+    """Mock printer: collects lines along with font width, prints nothing."""
 
     def __init__(self):
         self.zeilen: list[tuple[str, bool]] = []
@@ -50,8 +50,8 @@ class TextPrinter:
     def close(self):
         pass
 
-    # QR- und Barcode erzeugen keine Textzeilen und sind für die
-    # Breitenprüfung ohne Belang. Sie müssen nur vorhanden sein.
+    # QR codes and barcodes produce no text lines and are irrelevant to the
+    # width check. They just need to exist.
     def qr(self, content, **_):
         pass
 
@@ -74,7 +74,7 @@ def main() -> int:
                 drucker = TextPrinter()
                 modul.erstelle_bon(drucker)
                 for zeile, doppelt_breit in drucker.zeilen:
-                    # In Doppelbreite passt nur die halbe Zeichenzahl aufs Papier.
+                    # In double width, only half as many characters fit on the paper.
                     grenze = breite // 2 if doppelt_breit else breite
                     if len(zeile) > grenze and (breite, zeile) not in BEKANNTE_AUSNAHMEN:
                         zu_lang.add((len(zeile), grenze, zeile))
@@ -85,13 +85,13 @@ def main() -> int:
                     print(f"      {laenge} > {grenze}: {zeile!r}")
                     fehler.append((breite, name, zeile))
             else:
-                print(f"  ✓ {name:<12} {DURCHLAEUFE} Bons")
+                print(f"  ✓ {name:<12} {DURCHLAEUFE} receipts")
 
     if fehler:
-        print(f"\n✗ {len(fehler)} zu lange Zeile(n).")
+        print(f"\n✗ {len(fehler)} line(s) too long.")
         return 1
 
-    print("\n✓ Alle Bons passen aufs Papier.")
+    print("\n✓ All receipts fit the paper.")
     return 0
 
 

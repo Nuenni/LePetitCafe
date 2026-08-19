@@ -1,16 +1,17 @@
 #!/bin/bash
-# Einmalige Einrichtung auf dem Raspberry Pi
+# One-time setup on the Raspberry Pi
 set -e
 
 echo "=== LePetitCafe Setup ==="
 
-# Paketlisten aktualisieren
+# Update package lists
 sudo apt-get update -q
 
-# Python-Abhängigkeiten.
-# Pillow, pyserial und pyusb kommen bewusst aus den Paketquellen statt von pip:
-# Auf dem alten Pi Zero (ARMv6) gibt es dafür oft keine fertigen pip-Pakete,
-# dann kompiliert pip minutenlang selbst. Als apt-Paket sind sie sofort da.
+# Python dependencies.
+# Pillow, pyserial, and pyusb deliberately come from the package repos
+# instead of pip: on the old Pi Zero (ARMv6), pip often has no prebuilt
+# packages for these, so it compiles them itself for several minutes. As
+# apt packages they're available instantly.
 sudo apt-get install -y \
     python3-pip \
     python3-rpi.gpio \
@@ -18,43 +19,43 @@ sudo apt-get install -y \
     python3-serial \
     python3-usb
 
-# Python-Bibliotheken (findet die apt-Pakete oben bereits vor)
+# Python libraries (finds the apt packages above already installed)
 pip3 install --break-system-packages -r requirements.txt
 
-# Geräterechte: /dev/usb/lp0 gehört root:lp, /dev/ttyUSB0 gehört root:dialout
+# Device permissions: /dev/usb/lp0 belongs to root:lp, /dev/ttyUSB0 to root:dialout
 sudo usermod -a -G lp,dialout "$USER"
 
-# Systemd-Service installieren
+# Install the systemd service
 sudo cp lepetitcafe.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable lepetitcafe.service
 
 echo ""
-echo "✓ Fertig!"
+echo "✓ Done!"
 echo ""
 
-# Angeschlossenen Drucker suchen und melden
+# Look for a connected printer and report it
 if ls /dev/usb/lp* >/dev/null 2>&1; then
-    echo "Gefundener USB-Drucker: $(ls /dev/usb/lp*)"
-    echo "→ PRINTER_MODE = \"usb\", PRINTER_DEVICE = obiger Pfad."
+    echo "USB printer found: $(ls /dev/usb/lp*)"
+    echo "→ PRINTER_MODE = \"usb\", PRINTER_DEVICE = the path above."
 elif ls /dev/ttyUSB* >/dev/null 2>&1; then
-    echo "Gefundener USB-Seriell-Adapter: $(ls /dev/ttyUSB*)"
-    echo "→ PRINTER_MODE = \"serial\", SERIAL_DEVICE = obiger Pfad."
-    echo "  Baudrate auslesen: Drucker aus, FEED gedrückt halten, einschalten."
+    echo "USB-to-serial adapter found: $(ls /dev/ttyUSB*)"
+    echo "→ PRINTER_MODE = \"serial\", SERIAL_DEVICE = the path above."
+    echo "  Read the baud rate: printer off, hold FEED, switch on."
 else
-    echo "⚠ Kein Drucker gefunden (/dev/usb/lp* und /dev/ttyUSB*)."
-    echo "  Drucker einschalten, Kabel prüfen, dann:  ls /dev/usb/ /dev/ttyUSB*"
+    echo "⚠ No printer found (/dev/usb/lp* and /dev/ttyUSB*)."
+    echo "  Switch on the printer, check the cable, then:  ls /dev/usb/ /dev/ttyUSB*"
 fi
 
 echo ""
-echo "Noch in config.py prüfen:"
-echo "  - PRINTER_MODE   = \"usb\", \"serial\" oder \"network\""
-echo "  - PRINTER_WIDTH  = 42 (80mm-Papier) oder 32 (58mm-Papier)"
-echo "  - GPIO_*         = GPIO-Pins der drei Knöpfe"
+echo "Still check in config.py:"
+echo "  - PRINTER_MODE   = \"usb\", \"serial\", or \"network\""
+echo "  - PRINTER_WIDTH  = 42 (80mm paper) or 32 (58mm paper)"
+echo "  - GPIO_*         = GPIO pins of the six buttons"
 echo ""
-echo "Danach starten mit:"
+echo "Then start with:"
 echo "  sudo systemctl start lepetitcafe"
 echo ""
-echo "Status prüfen:"
+echo "Check status:"
 echo "  sudo systemctl status lepetitcafe"
 echo "  journalctl -u lepetitcafe -f"

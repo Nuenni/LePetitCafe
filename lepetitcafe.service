@@ -1,14 +1,14 @@
 [Unit]
-Description=LePetitCafe Kassenbon-Drucker
-# Bewusst KEIN network-online.target: Bei USB-Druckern kostet das Warten auf
-# WLAN 15-30 Sekunden Bootzeit, ohne dass es gebraucht wird. Falls der Drucker
-# doch im Netz hängt, fasst main.py beim Start mehrfach nach (_auf_drucker_warten).
+Description=LePetitCafe receipt printer
+# Deliberately NOT network-online.target: for USB printers, waiting on WiFi
+# costs 15-30 seconds of boot time for no reason. If the printer is on the
+# network after all, main.py retries a few times at startup (_auf_drucker_warten).
 After=multi-user.target
 
 [Service]
 Type=simple
 User=pi
-# Zugriff auf /dev/usb/lp0 (root:lp) bzw. /dev/ttyUSB0 (root:dialout)
+# Access to /dev/usb/lp0 (root:lp) and /dev/ttyUSB0 (root:dialout)
 SupplementaryGroups=lp dialout
 WorkingDirectory=/home/pi/LePetitCafe
 ExecStart=/usr/bin/python3 /home/pi/LePetitCafe/main.py
