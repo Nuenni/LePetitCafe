@@ -36,10 +36,7 @@ SNACKS = [
     ("Slushie",          3.20),
 ]
 
-QR_MESSAGES = [
-    "VOUCHER: You pick tonight's film.",
-    "VOUCHER: Popcorn, no arguments.",
-    "VOUCHER: Ten minutes past bedtime.",
+JOKES = [
     "Why did the biscuit go to the cinema? For the crumb-edy.",
     "What does popcorn do at the cinema? It bursts with excitement!",
     "Why are films never tired? They always have a role to play.",
@@ -108,6 +105,7 @@ def erstelle_bon(printer):
     printer.text("\n")
     printer.text(layout.wrapped("Please show at the entrance"))
     printer.text(layout.wrapped("Enjoy the film!"))
-    layout.codes(printer, random.choice(QR_MESSAGES),
-                 f"KINO{number:04d}", "Scan me!")
+    qr_content = (layout.voucher_url("en") if random.random() < 0.5
+                  else layout.joke_url("en", random.choice(JOKES)))
+    layout.codes(printer, qr_content, f"KINO{number:04d}", "Scan me!")
     printer.cut()

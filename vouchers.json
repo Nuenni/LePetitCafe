@@ -1,0 +1,14 @@
+[
+  { "id": "eis1",        "emoji": "🍦", "de": "1 Kugel Eis",                       "en": "1 Scoop of Ice Cream" },
+  { "id": "eis2",        "emoji": "🍨", "de": "2 Kugeln Eis",                      "en": "2 Scoops of Ice Cream" },
+  { "id": "eis3",        "emoji": "🍧", "de": "3 Kugeln Eis",                      "en": "3 Scoops of Ice Cream" },
+  { "id": "eisbecher",   "emoji": "🍨", "de": "Ein Eisbecher",                     "en": "One Ice Cream Sundae" },
+  { "id": "zeit_mama",   "emoji": "💛", "de": "Zeit mit Mama",                     "en": "Time with Mom" },
+  { "id": "zeit_papa",   "emoji": "💙", "de": "Zeit mit Papa",                     "en": "Time with Dad" },
+  { "id": "zeit_oma",    "emoji": "💚", "de": "Zeit mit Oma",                      "en": "Time with Grandma" },
+  { "id": "zeit_opa",    "emoji": "🧡", "de": "Zeit mit Opa",                      "en": "Time with Grandpa" },
+  { "id": "spaziergang", "emoji": "🌳", "de": "Ein Spaziergang zusammen",          "en": "A Walk Together" },
+  { "id": "fahrrad",     "emoji": "🚲", "de": "Fahrradfahren mit Mama oder Papa",  "en": "A Bike Ride with Mom or Dad" },
+  { "id": "schwimmen",   "emoji": "🏊", "de": "Einmal schwimmen gehen",            "en": "A Trip to Go Swimming" },
+  { "id": "spielzeug",   "emoji": "🎁", "de": "Ein kleines neues Spielzeug",       "en": "One Small New Toy" }
+]

@@ -59,11 +59,9 @@ MENU = [
 ]
 
 
-# Goes into the QR code on the receipt. ASCII only, see layout.codes().
-QR_MESSAGES = [
-    "VOUCHER: One extra scoop, more than usual. Promise!",
-    "VOUCHER: You choose the flavour for everyone.",
-    "VOUCHER: Sprinkles on top, no need to ask.",
+# Goes into the QR code on the receipt when there's no voucher link.
+# ASCII only, see layout.codes().
+JOKES = [
     "What does a snowman do in summer? A puddle.",
     "Why is ice cream never grumpy? It's always well chilled!",
     "What do you call ice cream that tells jokes? A sundae funny.",
@@ -118,6 +116,7 @@ def erstelle_bon(printer):
     printer.text("We wish you a\n")
     printer.text("wonderful day!\n")
     printer.text("* * *\n")
-    layout.codes(printer, random.choice(QR_MESSAGES),
-                 f"LPC{rec_no:05d}", "Scan me!")
+    qr_content = (layout.voucher_url("en") if random.random() < 0.5
+                  else layout.joke_url("en", random.choice(JOKES)))
+    layout.codes(printer, qr_content, f"LPC{rec_no:05d}", "Scan me!")
     printer.cut()

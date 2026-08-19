@@ -9,9 +9,19 @@ Wichtig: In doppelt breiter Schrift (double_width=True) passen nur halb so
 viele Zeichen in eine Zeile. Dafür gibt es den Schalter `big=True`.
 """
 
+import json
+import pathlib
+import random
 import textwrap
+import urllib.parse
 
 import config
+
+_VOUCHERS_PATH = pathlib.Path(__file__).resolve().parent.parent / "vouchers.json"
+_VOUCHERS = json.loads(_VOUCHERS_PATH.read_text(encoding="utf-8"))
+
+_VOUCHER_PAGES = {"de": "gutschein.html", "en": "voucher.html"}
+_DEMO_BASE_URL = "https://nuenni.github.io/LePetitCafe"
 
 # Mindestabstand zwischen Text und Preis. Zwei Leerzeichen, damit der
 # HTML-Simulator Preiszeilen zuverlässig als solche erkennt.
@@ -58,6 +68,29 @@ def wrapped(text: str, indent: int = 0) -> str:
     """Fließtext auf die Papierbreite umbrechen statt ihn abzuschneiden."""
     zeilen = textwrap.wrap(text, width=width() - indent) or [""]
     return "".join(" " * indent + zeile + "\n" for zeile in zeilen)
+
+
+def voucher_url(language: str) -> str:
+    """
+    Liefert einen Link auf eine zufällige Gutschein-Seite (gutschein.html/
+    voucher.html), gespeist aus vouchers.json. Landet im QR-Code statt
+    reinem Text, damit das Handy eine schön gestaltete Seite öffnet statt
+    (wie bei "GUTSCHEIN: ..."-Text) fälschlich ein URL-Schema zu vermuten
+    oder (wie bei reinem Text) eine Google-Suche vorzuschlagen.
+    """
+    gutschein = random.choice(_VOUCHERS)
+    seite = _VOUCHER_PAGES[language]
+    return f"{_DEMO_BASE_URL}/{seite}?g={gutschein['id']}"
+
+
+def joke_url(language: str, witz: str) -> str:
+    """
+    Liefert einen Link, der denselben Witz-Text schön am Handy anzeigt statt
+    ihn als reinen Text in den QR-Code zu schreiben. Der Text reist direkt
+    per URL-Parameter mit, braucht also keinen Eintrag in vouchers.json.
+    """
+    seite = _VOUCHER_PAGES[language]
+    return f"{_DEMO_BASE_URL}/{seite}?w={urllib.parse.quote(witz)}"
 
 
 def codes(drucker, qr_text: str, bon_nummer: str, hinweis: str) -> None:

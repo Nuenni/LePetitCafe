@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gutschein · Le Petit Café</title>
+<style>
+:root {
+  --grund:    #15171c;
+  --papier:   #f6f4ef;
+  --tinte:    #302c28;
+  --text:     #e8eaee;
+  --gedaempft:#8b91a0;
+  --kante:    #2b2f39;
+  --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--grund);
+  color: var(--text);
+  font-family: var(--ui);
+  min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.karte {
+  width: 100%; max-width: 380px;
+  background: var(--papier);
+  color: var(--tinte);
+  border-radius: 20px;
+  padding: 40px 28px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.augenbraue {
+  font-size: .7rem; letter-spacing: .22em; text-transform: uppercase;
+  color: #8a7f6a; margin-bottom: 22px;
+}
+.emoji { font-size: 3.6rem; line-height: 1; margin-bottom: 18px; }
+.titel {
+  font-size: .78rem; letter-spacing: .18em; text-transform: uppercase;
+  color: #8a7f6a; margin-bottom: 10px;
+}
+.text {
+  font-size: clamp(1.3rem, 6vw, 1.7rem); font-weight: 800;
+  letter-spacing: -.01em; text-wrap: balance; line-height: 1.25;
+}
+.fuss {
+  margin-top: 26px; font-size: .78rem; color: #8a7f6a;
+}
+.hinweis {
+  margin-top: 18px; font-size: .85rem; color: var(--gedaempft);
+  max-width: 320px;
+}
+</style>
+</head>
+<body>
+
+<div id="ziel">
+  <div class="karte">
+    <div class="augenbraue">Le Petit Café</div>
+    <div class="emoji" id="emoji">🎟️</div>
+    <div class="titel" id="titel">Gutschein</div>
+    <div class="text" id="text">Wird geladen …</div>
+    <div class="fuss" id="fuss">Einzulösen bei Mama oder Papa</div>
+  </div>
+</div>
+
+<script>
+async function zeigeGutschein() {
+  const params = new URLSearchParams(location.search);
+  const id     = params.get("g");
+  const witz   = params.get("w");
+  const emojiEl = document.getElementById("emoji");
+  const titelEl = document.getElementById("titel");
+  const textEl  = document.getElementById("text");
+  const fussEl  = document.getElementById("fuss");
+
+  // Witze brauchen keine Datenbank: Der Text steckt direkt in der URL,
+  // die der Drucker in den QR-Code schreibt.
+  if (witz) {
+    emojiEl.textContent = "😄";
+    titelEl.textContent = "Spruch des Tages";
+    textEl.textContent = witz;
+    fussEl.remove();
+    return;
+  }
+
+  if (!id) {
+    textEl.textContent = "Kein Gutschein angegeben.";
+    return;
+  }
+
+  try {
+    const antwort = await fetch("vouchers.json");
+    const gutscheine = await antwort.json();
+    const gutschein = gutscheine.find(g => g.id === id);
+
+    if (!gutschein) {
+      textEl.textContent = "Dieser Gutschein wurde nicht gefunden.";
+      return;
+    }
+
+    emojiEl.textContent = gutschein.emoji || "🎟️";
+    textEl.textContent = gutschein.de;
+  } catch (fehler) {
+    textEl.textContent = "Gutschein konnte nicht geladen werden.";
+    document.querySelector(".karte").insertAdjacentHTML(
+      "beforeend",
+      '<div class="hinweis">Bitte mit Internetverbindung erneut versuchen.</div>'
+    );
+  }
+}
+zeigeGutschein();
+</script>
+
+</body>
+</html>

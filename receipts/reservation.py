@@ -27,10 +27,7 @@ OCCASIONS_SMALL = [None, None, None, None, "Just because"]
 OCCASIONS_LARGE = ["Birthday", "Birthday", "Family celebration",
                    "First day at school", None]
 
-QR_MESSAGES = [
-    "VOUCHER: You choose your seat at the table.",
-    "VOUCHER: You order for everyone today.",
-    "VOUCHER: Extra pudding, because you booked ahead.",
+JOKES = [
     "Why is the table never late? It is always laid on time.",
     "What does the chair say to the table? Nothing, furniture cannot talk.",
     "What do you call a booked table? Taken and happy.",
@@ -107,6 +104,7 @@ def erstelle_bon(printer):
     printer.set(align="center")
     printer.text(layout.wrapped("We look forward to seeing you!"))
     printer.text(layout.wrapped("Please arrive 10 minutes early."))
-    layout.codes(printer, random.choice(QR_MESSAGES),
-                 f"RES{number:05d}", "Scan me!")
+    qr_content = (layout.voucher_url("en") if random.random() < 0.5
+                  else layout.joke_url("en", random.choice(JOKES)))
+    layout.codes(printer, qr_content, f"RES{number:05d}", "Scan me!")
     printer.cut()

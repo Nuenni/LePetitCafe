@@ -36,10 +36,7 @@ SNACKS = [
     ("Slush-Eis",         3.20),
 ]
 
-QR_NACHRICHTEN = [
-    "GUTSCHEIN: Du darfst den Film fuer heute Abend aussuchen.",
-    "GUTSCHEIN: Einmal Popcorn ohne Diskussion.",
-    "GUTSCHEIN: Zehn Minuten laenger aufbleiben.",
+WITZE = [
     "Warum ging der Keks ins Kino? Er wollte einen Kruemel-Film sehen.",
     "Was macht ein Popcorn im Kino? Es platzt vor Spannung!",
     "Warum sind Filme nie muede? Sie haben immer eine Rolle zu spielen.",
@@ -108,6 +105,7 @@ def erstelle_bon(drucker):
     drucker.text("\n")
     drucker.text(layout.wrapped("Bitte am Eingang vorzeigen"))
     drucker.text(layout.wrapped("Viel Spaß im Kino!"))
-    layout.codes(drucker, random.choice(QR_NACHRICHTEN),
-                 f"KINO{nummer:04d}", "Scann mich!")
+    qr_inhalt = (layout.voucher_url("de") if random.random() < 0.5
+                 else layout.joke_url("de", random.choice(WITZE)))
+    layout.codes(drucker, qr_inhalt, f"KINO{nummer:04d}", "Scann mich!")
     drucker.cut()

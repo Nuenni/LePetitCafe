@@ -30,10 +30,7 @@ TICKETS = [
 
 CAB_COLOURS = ["yellow", "cream", "silver", "black"]
 
-QR_MESSAGES = [
-    "VOUCHER: You get to choose the route today.",
-    "VOUCHER: Sit up front next to the driver!",
-    "VOUCHER: This ride is on the house.",
+JOKES = [
     "Why don't buses ever sit down? They have plenty of seats already!",
     "What is yellow and drives in circles? A taxi in a roundabout.",
     "How does a hedgehog get on the bus? Through the door, like everyone.",
@@ -65,7 +62,9 @@ def _foot(printer, note: str, number: str) -> None:
     printer.set(align="center")
     printer.text("\n")
     printer.text(layout.wrapped(note))
-    layout.codes(printer, random.choice(QR_MESSAGES), number, "Scan me!")
+    qr_content = (layout.voucher_url("en") if random.random() < 0.5
+                  else layout.joke_url("en", random.choice(JOKES)))
+    layout.codes(printer, qr_content, number, "Scan me!")
     printer.cut()
 
 

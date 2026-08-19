@@ -39,11 +39,9 @@ ITEMS = [
 ]
 
 
-# Goes into the QR code on the receipt. ASCII only, see layout.codes().
-QR_MESSAGES = [
-    "VOUCHER: You get to pick what's for pudding tonight!",
-    "VOUCHER: Push the trolley all by yourself - one time only.",
-    "VOUCHER: One extra scoop of ice cream. Ask a grown-up.",
+# Goes into the QR code on the receipt when there's no voucher link.
+# ASCII only, see layout.codes().
+JOKES = [
     "Why don't bees need trolleys? They already have baskets!",
     "What do you call a sad strawberry? A blueberry.",
     "Two biscuits meet. One says: you're crumbling! - So are you!",
@@ -95,8 +93,9 @@ def erstelle_bon(printer):
     printer.text(f"{random.choice(_phrases())}\n")
     printer.text("Thank you for shopping with us!\n")
     printer.text("See you soon!\n")
-    layout.codes(printer, random.choice(QR_MESSAGES),
-                 f"LPC{rec_no:05d}", "Scan me!")
+    qr_content = (layout.voucher_url("en") if random.random() < 0.5
+                  else layout.joke_url("en", random.choice(JOKES)))
+    layout.codes(printer, qr_content, f"LPC{rec_no:05d}", "Scan me!")
     printer.cut()
 
 def _round_up(amount):
