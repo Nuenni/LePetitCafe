@@ -1,8 +1,8 @@
 # Le Petit Café 🧾
 
-**A receipt printer for kids** — three big buttons, three play worlds, real thermal prints. No PC, no screen, no app needed.
+**A receipt printer for kids** — six big buttons, six play worlds, real thermal prints. No PC, no screen, no app needed.
 
-Press a button → a unique, randomly generated receipt comes rattling out of the printer. Perfect for playing supermarket, ice cream café, or restaurant.
+Press a button → a unique, randomly generated receipt comes rattling out of the printer. Perfect for playing supermarket, ice cream café, restaurant, bus/taxi, cinema, or table reservation.
 
 ![Receipt preview](docs/preview.png)
 
@@ -39,15 +39,18 @@ Every receipt is unique — random items, prices, names, table numbers, timestam
 
 ---
 
-## Three Play Worlds, Three Buttons
+## Six Play Worlds, Six Buttons
 
-| Button | Store | Receipt includes |
+| Button | World | Receipt includes |
 |--------|-------|-----------------|
 | 🔴 Red | **PETIT MARCHÉ** (Supermarket) | Groceries, cashier name, change calculation |
-| 🟣 Purple | **LE PETIT CAFÉ** (Ice Cream Café) | Sundaes, ice lollies, chosen flavours |
-| 🔵 Blue | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, VAT, sometimes a tip |
+| 🔵 Blue | **LE PETIT CAFÉ** (Ice Cream Café) | Sundaes, ice lollies, chosen flavours |
+| 🟢 Green | **LE PETIT BISTRO** (Restaurant) | Starter / main / dessert / drinks, VAT, sometimes a tip |
+| 🟡 Yellow | **Bus / Taxi** | Random stop, seat number, fare |
+| ⚫ Black | **Cinema** | Made-up movie title, screen & seat, snacks |
+| ⚪ White | **Reservation** | Party size, table number, guest names |
 
-All three end with a barcode and a **scannable QR code** containing a joke or a voucher — see below.
+All six end with a barcode and a **scannable QR code** containing a joke or a voucher — see below.
 
 Receipts are available in **German** (default) and **English** — see `receipts/` folder.
 
@@ -82,12 +85,12 @@ Everything below plugs together — **no soldering required**.
 | microSD card | 16 GB Class 10 | ~8 € |
 | Pi power supply | 5V / 2.5A Micro-USB | ~10 € |
 | USB adapter | Micro-USB **OTG** → USB-A *(the Pi Zero has no USB-A port)* | ~5 € |
-| Arcade buttons | 60mm with 6.3mm spade terminals, 3 colours | ~12 € |
-| Button cables | 6.3mm spade → Dupont socket, 6 pieces | ~8 € |
+| Arcade buttons | 60mm with 6.3mm spade terminals, 6 colours | ~24 € |
+| Button cables | 6.3mm spade → Dupont socket, 12 pieces | ~12 € |
 | Power strip | Short 3-outlet strip, so only **one** cable leaves the box | ~8 € |
 | Enclosure | Wooden box, toolbox or 3D print | ~15 € |
 
-**Total: ~135 €** — around 90 € if you find a printer with its power supply cheap.
+**Total: ~150 €** — around 105 € if you find a printer with its power supply cheap.
 
 > ⚠️ **The one mistake to avoid when buying used:** many listings ship *without* the PS-180 power supply (24V, 3-pin) — restaurants tend to keep them. Buying one separately costs 17–25 €. Always check the listing says "with power supply". Also make sure you get the **USB** variant — the TM-T20 also exists with serial and Ethernet interfaces.
 
@@ -162,7 +165,7 @@ Get the **WH** variant — the "H" means the GPIO header is already soldered on,
 
 **60mm LED-illuminated arcade buttons** — big enough for small hands, sturdy and colourful.
 
-- **BerryBase** `Large Arcade Button 60mm beleuchtet LED 12V DC` — ~4 € each, red/blue/yellow/green available, ships from Germany
+- **BerryBase** `Large Arcade Button 60mm beleuchtet LED 12V DC` — ~4 € each, red/blue/green/yellow/black/white available, ships from Germany
 - **Amazon** — search: `60mm arcade button LED` (brands: EG STARTS, uxcell, BQLZR)
 
 > **LED note:** The LED runs on 12V DC. The button switch itself connects directly to GPIO at 3.3V — no 12V supply needed just for the button function.
@@ -174,9 +177,12 @@ Get the **WH** variant — the "H" means the GPIO header is already soldered on,
 ```
 Raspberry Pi Zero 2 W — GPIO (BCM numbering)
 
-  Button RED    (Supermarket) → GPIO 17 + GND
-  Button PURPLE (Ice Cream)   → GPIO 27 + GND
-  Button BLUE   (Restaurant)  → GPIO 22 + GND
+  Button RED    (Supermarket)  → GPIO 17 + GND
+  Button BLUE   (Ice Cream)    → GPIO 27 + GND
+  Button GREEN  (Restaurant)   → GPIO 22 + GND
+  Button YELLOW (Bus/Taxi)     → GPIO 23 + GND
+  Button BLACK  (Cinema)       → GPIO 24 + GND
+  Button WHITE  (Reservation)  → GPIO 25 + GND
 ```
 
 Internal pull-up resistors are enabled. Each button simply connects its GPIO pin to GND when pressed — no external resistors needed.
@@ -184,12 +190,15 @@ Internal pull-up resistors are enabled. Each button simply connects its GPIO pin
 ```
                 3V3  [1]  [2]  5V
               GPIO2  [3]  [4]  5V
-              GPIO3  [5]  [6]  GND ←── all 3 buttons share GND here
+              GPIO3  [5]  [6]  GND ←── all 6 buttons can share GND here
               GPIO4  [7]  [8]  GPIO14
                 GND  [9] [10]  GPIO15
-  RED   → GPIO17 [11] [12]  GPIO18
-  PURPLE→ GPIO27 [13] [14]  GND
-  BLUE  → GPIO22 [15] [16]  GPIO23
+  RED    → GPIO17 [11] [12]  GPIO18
+  BLUE   → GPIO27 [13] [14]  GND
+  GREEN  → GPIO22 [15] [16]  GPIO23 ← YELLOW
+                3V3 [17] [18]  GPIO24 ← BLACK
+             GPIO10 [19] [20]  GND
+              GPIO9 [21] [22]  GPIO25 ← WHITE
 ```
 
 ---
@@ -286,19 +295,32 @@ LePetitCafe/
 ├── setup.sh                 # One-time setup script
 ├── lepetitcafe.service      # systemd unit for autostart
 ├── test_receipts.py         # Checks every receipt fits the paper width
+├── test_local_printer.py    # Print over USB straight from your own computer
 ├── preview.py               # Regenerates the two demos below
 ├── simulator.html           # Standalone demo — German
 ├── simulator_en.html        # Standalone demo — English
+├── vouchers.json            # Shared voucher pool for the QR-code pages
+├── gutschein.html           # Voucher/joke landing page — German
+├── voucher.html             # Voucher/joke landing page — English
 ├── docs/
-│   └── preview.png
+│   ├── preview.png
+│   ├── voucher-example.png
+│   └── joke-example.png
 └── receipts/
     ├── layout.py            # Width-aware line layout (58mm / 80mm)
+    ├── kaffeepause.py       # Private easter-egg receipt (see config.COFFEE_*)
     ├── supermarkt.py        # 🇩🇪 PETIT MARCHÉ
     ├── eiscafe.py           # 🇩🇪 LE PETIT CAFÉ
     ├── restaurant.py        # 🇩🇪 LE PETIT BISTRO
+    ├── bus.py               # 🇩🇪 Bus/Taxi
+    ├── kino.py              # 🇩🇪 KinderKino
+    ├── reservierung.py      # 🇩🇪 Reservierung
     ├── supermarket.py       # 🇬🇧 THE LITTLE MARKET
     ├── icecream.py          # 🇬🇧 THE LITTLE CAFÉ
-    └── bistro.py            # 🇬🇧 THE LITTLE BISTRO
+    ├── bistro.py            # 🇬🇧 THE LITTLE BISTRO
+    ├── transit.py           # 🇬🇧 Bus/Taxi
+    ├── cinema.py            # 🇬🇧 Cinema
+    └── reservation.py       # 🇬🇧 Reservation
 ```
 
 ---
@@ -309,7 +331,7 @@ LePetitCafe/
 python3 preview.py
 ```
 
-Regenerates `simulator.html` and `simulator_en.html` — standalone pages with 24 sample receipts, three arcade buttons to cycle through them, and no server needed. Open the file in any browser.
+Regenerates `simulator.html` and `simulator_en.html` — standalone pages with sample receipts for all six play worlds, six arcade buttons to cycle through them, and no server needed. Open the file in any browser.
 
 The preview is **character-accurate**: it renders in real monospace at exactly `PRINTER_WIDTH` columns, so what you see is what the printer puts out. It also checks every character against the printer's actual code-page profile via `python-escpos` and highlights anything the printer can't represent in red.
 
@@ -358,7 +380,7 @@ print('Success!')
 
 ## Enclosure ideas
 
-- **Wooden box** from a hardware store — hole for printer on top, three button holes on front
+- **Wooden box** from a hardware store — hole for printer on top, six button holes on front
 - **IKEA MOPPE** mini drawer unit — drawers as shopping basket, buttons on top
 - **3D print** — enclosure designs welcome as PRs!
 - **Metal lunchbox** — sturdy, cheap, hinged lid as a cash drawer
