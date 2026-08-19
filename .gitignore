@@ -5,5 +5,5 @@ __pycache__/
 # Diese Datei darf NICHT ins öffentliche Repository.
 config_local.py
 
-# Session-Übergabe: kann echte Namen/Details enthalten, ist nur für dich.
+# Session-Übergabe-Notizen: bleiben lokal, gehen niemanden sonst was an.
 HANDOVER.md
