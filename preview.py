@@ -19,20 +19,26 @@ import random
 import sys
 
 import config
-from receipts import (supermarkt, eiscafe, restaurant,
-                      supermarket, icecream, bistro)
+from receipts import (supermarkt, eiscafe, restaurant, bus, kino, reservierung,
+                      supermarket, icecream, bistro, transit, cinema, reservation)
 
 BONS_PRO_WELT = 8
 
 WELTEN_DE = [
-    ("supermarkt", "Supermarkt", "PETIT MARCHÉ",     "rot",   supermarkt),
-    ("eiscafe",    "Eiscafé",    "LE PETIT CAFÉ",    "lila",  eiscafe),
-    ("restaurant", "Restaurant", "LE PETIT BISTRO",  "blau",  restaurant),
+    ("supermarkt",   "Supermarkt",   "PETIT MARCHÉ",     "rot",     supermarkt),
+    ("eiscafe",      "Eiscafé",      "LE PETIT CAFÉ",    "blau",    eiscafe),
+    ("restaurant",   "Restaurant",   "LE PETIT BISTRO",  "gruen",   restaurant),
+    ("bus",          "Bus/Taxi",     "LE PETIT EXPRESS", "gelb",    bus),
+    ("kino",         "KinderKino",   "KINDERKINO",       "schwarz", kino),
+    ("reservierung", "Reservierung", "LE PETIT BISTRO",  "weiss",   reservierung),
 ]
 WELTEN_EN = [
-    ("supermarket", "Supermarket", "THE LITTLE MARKET", "rot",  supermarket),
-    ("icecream",    "Ice Cream",   "THE LITTLE CAFÉ",   "lila", icecream),
-    ("bistro",      "Restaurant",  "THE LITTLE BISTRO", "blau", bistro),
+    ("supermarket", "Supermarket",  "THE LITTLE MARKET", "rot",     supermarket),
+    ("icecream",    "Ice Cream",    "THE LITTLE CAFÉ",   "blau",    icecream),
+    ("bistro",      "Restaurant",   "THE LITTLE BISTRO", "gruen",   bistro),
+    ("transit",     "Bus/Taxi",     "LE PETIT EXPRESS",  "gelb",    transit),
+    ("cinema",      "Cinema",       "CINÉMA PETIT",      "schwarz", cinema),
+    ("reservation", "Reservation",  "THE LITTLE BISTRO", "weiss",   reservation),
 ]
 
 TEXTE = {
@@ -334,8 +340,11 @@ CSS = """<style>
   --text:     #e8eaee;
   --gedaempft:#8b91a0;
   --rot:      #d0432f;
-  --lila:     #8f4bb8;
   --blau:     #2f86c5;
+  --gruen:    #3f9e5c;
+  --gelb:     #d9a92c;
+  --schwarz:  #3a3d46;
+  --weiss:    #d8dbe2;
   --gut:      #4ca97a;
   --warn:     #e0654a;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
@@ -362,11 +371,13 @@ body {
 }
 .unter { color: var(--gedaempft); font-size: .9rem; }
 
-/* Bedienpult mit den drei Arcade-Knöpfen */
+/* Bedienpult mit den sechs Arcade-Knöpfen. Grid statt flex, damit auf
+   schmalen Handy-Screens sauber in zwei Dreier-Reihen umgebrochen wird. */
 .pult {
-  display: flex; justify-content: center; gap: clamp(16px, 5vw, 32px);
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  justify-items: center; gap: 20px clamp(12px, 4vw, 28px);
   background: var(--pult); border: 1px solid var(--kante);
-  border-radius: 18px; padding: 24px 20px;
+  border-radius: 18px; padding: 24px 16px;
 }
 .knopf {
   background: none; border: 0; cursor: pointer; padding: 0;
@@ -374,13 +385,16 @@ body {
   font-family: inherit;
 }
 .kappe {
-  width: clamp(56px, 16vw, 76px); aspect-ratio: 1; border-radius: 50%;
+  width: clamp(48px, 13vw, 76px); aspect-ratio: 1; border-radius: 50%;
   display: block; transition: transform .08s ease, box-shadow .15s ease;
   border: 3px solid rgba(0,0,0,.35);
 }
-.rot  .kappe { background: radial-gradient(circle at 34% 30%, #f07a63, var(--rot)); box-shadow: 0 6px 0 #7e2416; }
-.lila .kappe { background: radial-gradient(circle at 34% 30%, #c081e0, var(--lila)); box-shadow: 0 6px 0 #56296f; }
-.blau .kappe { background: radial-gradient(circle at 34% 30%, #6fbdf0, var(--blau)); box-shadow: 0 6px 0 #1a5179; }
+.rot     .kappe { background: radial-gradient(circle at 34% 30%, #f07a63, var(--rot));     box-shadow: 0 6px 0 #7e2416; }
+.blau    .kappe { background: radial-gradient(circle at 34% 30%, #6fbdf0, var(--blau));    box-shadow: 0 6px 0 #1a5179; }
+.gruen   .kappe { background: radial-gradient(circle at 34% 30%, #7cd399, var(--gruen));   box-shadow: 0 6px 0 #1f5c34; }
+.gelb    .kappe { background: radial-gradient(circle at 34% 30%, #f0cf70, var(--gelb));    box-shadow: 0 6px 0 #7a5e13; }
+.schwarz .kappe { background: radial-gradient(circle at 34% 30%, #6a6e7a, var(--schwarz)); box-shadow: 0 6px 0 #17181c; }
+.weiss   .kappe { background: radial-gradient(circle at 34% 30%, #ffffff, var(--weiss));   box-shadow: 0 6px 0 #9195a0; border-color: rgba(0,0,0,.2); }
 .knopf:active .kappe { transform: translateY(5px); box-shadow: 0 1px 0 rgba(0,0,0,.5); }
 .knopf:focus-visible .kappe { outline: 3px solid var(--text); outline-offset: 4px; }
 .beschriftung {
@@ -478,7 +492,7 @@ def main() -> int:
         with open(datei, "w", encoding="utf-8") as f:
             f.write(markup)
         gesamt += fehler
-        print(f"  {datei:<20} {BONS_PRO_WELT * 3} Bons, "
+        print(f"  {datei:<20} {BONS_PRO_WELT * len(welten)} Bons, "
               f"{len(markup) // 1024} KB, {fehler} nicht druckbare Zeichen")
 
     if args.artifact:

@@ -22,10 +22,16 @@ if config.LANGUAGE == "de":
     from receipts import supermarkt as welt_markt
     from receipts import eiscafe as welt_eis
     from receipts import restaurant as welt_bistro
+    from receipts import bus as welt_bus
+    from receipts import kino as welt_kino
+    from receipts import reservierung as welt_reservierung
 else:
     from receipts import supermarket as welt_markt
     from receipts import icecream as welt_eis
     from receipts import bistro as welt_bistro
+    from receipts import transit as welt_bus
+    from receipts import cinema as welt_kino
+    from receipts import reservation as welt_reservierung
 
 logging.basicConfig(
     level=logging.INFO,
@@ -35,9 +41,12 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 SCHALTFLÄCHEN = {
-    config.GPIO_SUPERMARKT:  ("Supermarkt",  welt_markt.erstelle_bon),
-    config.GPIO_EISCAFE:     ("Eiscafé",     welt_eis.erstelle_bon),
-    config.GPIO_RESTAURANT:  ("Restaurant",  welt_bistro.erstelle_bon),
+    config.GPIO_SUPERMARKT:    ("Supermarkt",    welt_markt.erstelle_bon),
+    config.GPIO_EISCAFE:       ("Eiscafé",       welt_eis.erstelle_bon),
+    config.GPIO_RESTAURANT:    ("Restaurant",    welt_bistro.erstelle_bon),
+    config.GPIO_BUS:           ("Bus/Taxi",      welt_bus.erstelle_bon),
+    config.GPIO_KINO:          ("KinderKino",    welt_kino.erstelle_bon),
+    config.GPIO_RESERVIERUNG:  ("Reservierung",  welt_reservierung.erstelle_bon),
 }
 
 _letzter_druck: dict[int, float] = {}
@@ -98,8 +107,11 @@ def _bereit_bon(drucker) -> None:
     drucker.text("\n")
     drucker.text("Drück einen Knopf:\n\n")
     drucker.text("ROT     Supermarkt\n")
-    drucker.text("LILA    Eiscafé\n")
-    drucker.text("BLAU    Restaurant\n")
+    drucker.text("BLAU    Eiscafé\n")
+    drucker.text("GRUEN   Restaurant\n")
+    drucker.text("GELB    Bus/Taxi\n")
+    drucker.text("SCHWARZ KinderKino\n")
+    drucker.text("WEISS   Reservierung\n")
     drucker.cut()
 
 
@@ -136,10 +148,14 @@ def main() -> None:
     log.info("LePetitCafe gestartet – Drucker: %s (%d Zeichen breit)",
              _druckerziel(), config.PRINTER_WIDTH)
     log.info(
-        "Pins: Supermarkt=GPIO%d  Eiscafé=GPIO%d  Restaurant=GPIO%d",
+        "Pins: Supermarkt=GPIO%d  Eiscafé=GPIO%d  Restaurant=GPIO%d  "
+        "Bus/Taxi=GPIO%d  KinderKino=GPIO%d  Reservierung=GPIO%d",
         config.GPIO_SUPERMARKT,
         config.GPIO_EISCAFE,
         config.GPIO_RESTAURANT,
+        config.GPIO_BUS,
+        config.GPIO_KINO,
+        config.GPIO_RESERVIERUNG,
     )
 
     if config.PRINT_READY_RECEIPT:

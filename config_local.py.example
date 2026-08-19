@@ -14,6 +14,13 @@
 # Namen der Kinder als Kassierer/in und Bedienung auf den Bons
 STAFF_NAMES = ["Name1", "Name2", "Name3"]
 
+# Vornamen für Tischreservierungen. Passt die gewürfelte Personenzahl genau
+# zur Anzahl dieser Namen (oder ist kleiner), listet der Bon sie namentlich
+# auf ("Für: Name1 & Name2") statt nur "Fam. Nachname" zu drucken. Bei
+# größeren Runden (Geburtstag o.ä.) greift automatisch der generische
+# Nachname aus config.GUEST_NAMES.
+GUEST_FIRST_NAMES = ["Name1", "Name2", "Name3"]
+
 # Sprache der Bons: "de" oder "en"
 LANGUAGE = "de"
 

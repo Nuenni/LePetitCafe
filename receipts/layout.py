@@ -33,12 +33,22 @@ def money(betrag: float) -> str:
 
 
 def row(label: str, value: str, big: bool = False, indent: int = 0) -> str:
-    """Zeile mit Text links und Wert rechtsbündig am Papierrand."""
+    """
+    Zeile mit Text links und Wert rechtsbündig am Papierrand.
+
+    Werte wie Namenslisten ("Mia, Ben & Lea") kommen aus config_local.py
+    und sind damit nicht vorhersehbar lang. Passt label+value nicht mehr in
+    eine Zeile, geht das Label auf eine eigene Zeile und der Wert wird
+    darunter umgebrochen, statt die Papierbreite zu überschreiten.
+    """
     lueckenbreite = width(big) - indent - len(label) - len(value)
+    if lueckenbreite < _MIN_GAP:
+        return (" " * indent + label + "\n"
+               + wrapped(value, indent=indent + 2))
     return (
         " " * indent
         + label
-        + " " * max(lueckenbreite, _MIN_GAP)
+        + " " * lueckenbreite
         + value
         + "\n"
     )

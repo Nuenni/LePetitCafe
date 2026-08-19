@@ -99,7 +99,6 @@ def erstelle_bon(drucker):
     drucker.set(align="center", bold=False, double_height=False, double_width=False)
     drucker.text(f"*  {SLOGAN}  *\n")
     drucker.text("Marktplatz 7 · 12345 Genussstadt\n")
-    drucker.text("www.lepetitbistro.de\n")
     drucker.text(layout.divider())
 
     drucker.set(align="left")

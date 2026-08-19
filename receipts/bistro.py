@@ -91,7 +91,6 @@ def erstelle_bon(printer):
     printer.set(align="center", bold=False, double_height=False, double_width=False)
     printer.text(f"*  {SLOGAN}  *\n")
     printer.text(layout.wrapped("7 Market Square · 12345 Pleasantville"))
-    printer.text("www.thelittlebistro.com\n")
     printer.text(layout.divider())
 
     printer.set(align="left")
