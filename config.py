@@ -46,6 +46,24 @@ GPIO_RESERVIERUNG  = 25   # weiß
 # Mindestpause zwischen zwei Drucken (Sekunden), damit kein Endlosrollen entsteht
 DEBOUNCE_SECONDS = 3
 
+# ─── Kaffeepause (geheimer Bon) ─────────────────────────────────────────────
+# Ein kleiner Extra-Bon nur für dich: eine Kaffeebestellung "an Mama", die
+# entweder ganz selten zufällig zwischen den Kinderbons auftaucht, oder gezielt
+# per Tastenkombination. "Mama"/"Papa" sind Rollen, keine echten Namen –
+# gehört also anders als STAFF_NAMES nicht in config_local.py.
+COFFEE_FOR = "Mama"
+
+# Ungefähr jeder wievielte Bon zufällig ein Kaffeebon statt des gewählten
+# Spiels ist. None = deaktiviert den Zufallsanteil komplett.
+COFFEE_RANDOM_EVERY = 13
+
+# Diese zwei Knöpfe zusammen ~COFFEE_HOLD_SECONDS lang gedrückt halten löst
+# gezielt den Kaffeebon aus, statt der beiden normalen Spielwelten. Bewusst
+# zwei weit auseinanderliegende Knöpfe (rot + weiß), damit das beim wilden
+# Drauflosdrücken nicht aus Versehen passiert.
+COFFEE_COMBO = (GPIO_SUPERMARKT, GPIO_RESERVIERUNG)
+COFFEE_HOLD_SECONDS = 1.2
+
 # Beim Start einen kleinen "Bereit"-Bon drucken.
 # Praktisch als Ersatz für eine Bereitschafts-LED: Papier kommt raus = Pi ist
 # hochgefahren und die Knöpfe reagieren.
