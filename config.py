@@ -23,11 +23,14 @@ SERIAL_DSRDTR   = True
 PRINTER_IP   = "192.168.1.100"
 PRINTER_PORT = 9100
 
-# Zeichen pro Zeile in der Standardschrift (Font A).
-#   80 mm Papier (z. B. Epson TM-T20)  → 42
-#   58 mm Papier (Mini-/Akku-Drucker)  → 32
-# Falls die Trennlinien nicht exakt über die Papierbreite gehen: hier korrigieren.
-PRINTER_WIDTH = 42
+# Zeichen pro Zeile in der Standardschrift (Font A). Modellabhängig – nicht
+# raten, sondern nachsehen mit:
+#   python3 -c "from escpos.capabilities import get_profile as g; print(g('TM-T20II').fonts)"
+#   80 mm Papier, Epson TM-T20II          → 48  (72 mm nutzbare Breite)
+#   58 mm Papier (Mini-/Akku-Drucker)     → 32
+# Falls die Trennlinien nicht exakt über die Papierbreite gehen, oder rechts
+# ein auffälliger unbedruckter Rand bleibt: hier korrigieren.
+PRINTER_WIDTH = 48
 
 # ─── Knöpfe ───────────────────────────────────────────────────────────────
 # GPIO-Pinnummern (BCM-Nummerierung) der sechs Arcade-Knöpfe.

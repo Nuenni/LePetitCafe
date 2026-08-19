@@ -17,7 +17,7 @@ MODULE = [
     "supermarkt", "eiscafe", "restaurant", "bus", "kino", "reservierung",
     "supermarket", "icecream", "bistro", "transit", "cinema", "reservation",
 ]
-BREITEN = [42, 32]   # 80mm und 58mm Papier
+BREITEN = [48, 42, 32]   # 80mm (TM-T20II), 80mm (andere Modelle), 58mm Papier
 DURCHLAEUFE = 50
 
 # Bekannte, physikalisch unvermeidbare Ausnahmen: Diese Ladennamen sind länger

@@ -111,7 +111,7 @@ The code uses the **ESC/POS** protocol, supported by virtually all thermal recei
 
 > **Paper rolls:** Standard 80mm × 80mm thermal rolls, ~10 € for a 10-pack.
 
-> **Receipt width:** `PRINTER_WIDTH` in `config.py` controls how many characters fit per line — **42** for 80mm paper, **32** for 58mm. If your dividers don't reach the edge of the paper, this is the setting to adjust.
+> **Receipt width:** `PRINTER_WIDTH` in `config.py` controls how many characters fit per line — model-dependent, don't guess it. Check with `python3 -c "from escpos.capabilities import get_profile as g; print(g('TM-T20II').fonts)"` (swap in your model). **48** for the TM-T20II on 80mm paper, **32** for 58mm. If your dividers don't reach the edge of the paper, or there's an odd unprinted strip on the right, this is the setting to adjust.
 
 ---
 
@@ -220,7 +220,7 @@ Set how the printer is connected and how wide the paper is:
 ```python
 PRINTER_MODE   = "usb"            # "usb", "serial" or "network"
 PRINTER_DEVICE = "/dev/usb/lp0"   # check with: ls /dev/usb/
-PRINTER_WIDTH  = 42               # 42 for 80mm paper, 32 for 58mm
+PRINTER_WIDTH  = 48               # 48 for TM-T20II/80mm paper, 32 for 58mm
 LANGUAGE       = "en"             # "de" or "en"
 
 GPIO_SUPERMARKT  = 17
@@ -345,7 +345,7 @@ print('Success!')
 | Serial: lines missing on long receipts | `SERIAL_DSRDTR = True` (flow control) |
 | Serial: nothing happens at all | Straight-through cable instead of **null-modem**? Check `ls /dev/ttyUSB*` |
 | Printer unreachable (network mode) | Check IP in `config.py`; printer and Pi on same WiFi? |
-| Dividers don't span the paper | Wrong `PRINTER_WIDTH` — use 42 for 80mm, 32 for 58mm |
+| Dividers don't span the paper / odd blank strip on the right | Wrong `PRINTER_WIDTH` — check your model's real Font A column count, don't assume 42 |
 | Button not responding | Check GPIO pin number; check wiring |
 | Service won't start | `journalctl -u lepetitcafe` for details |
 | Receipt cuts off | Increase `DEBOUNCE_SECONDS` in `config.py` |
