@@ -53,14 +53,18 @@ Receipts are available in **German** (default) and **English** — see `receipts
 
 ### The QR code
 
-Every receipt ends with a barcode and a QR code. The QR doesn't point at a website — **the message is encoded in the code itself**, so scanning it with any phone camera shows the text instantly, with no internet connection and nothing to host or keep running.
+Every receipt ends with a barcode and a QR code. Scanning it opens a small, self-contained page — hosted for free on this repo's GitHub Pages — that shows either a joke or a voucher, styled to match the receipts:
 
-Each play world has its own pool of jokes and vouchers:
+<table>
+<tr>
+<td width="50%" align="center"><img src="docs/voucher-example.png" alt="Voucher example: Time with Dad" width="280"></td>
+<td width="50%" align="center"><img src="docs/joke-example.png" alt="Joke example: Why is ice cream never grumpy?" width="280"></td>
+</tr>
+</table>
 
-> *VOUCHER: You're head chef today. What are we having?*
-> *Waiter, there's a fly in my soup! — Don't worry, the spider is coming.*
+Vouchers come from a shared, shop-agnostic pool in [`vouchers.json`](vouchers.json) (scoops of ice cream, time with mom/dad/grandma/grandpa, a walk, a bike ride, a small toy...) — add your own ideas there, in both languages. Jokes are per play world; edit `JOKES`/`WITZE` in any receipt file. Keep the joke text ASCII — it travels inside the QR code's URL, and the printer generates the QR in hardware, so plain ASCII reads identically on every scanner while accented characters depend on the device.
 
-Edit `QR_MESSAGES` in any receipt file to add your own. Keep them ASCII — the printer generates the QR in hardware and passes the bytes through as given, so plain ASCII reads identically on every scanner while accented characters depend on the device.
+This used to encode the message as plain text directly in the QR code — no hosting needed, but phones (especially iOS) would sometimes misread a `VOUCHER:`-style prefix as an unknown URL scheme and show "no data available" instead of the message. Routing through a tiny hosted page fixed that and looks nicer besides. It does mean scanning needs an internet connection — printing itself still doesn't.
 
 ---
 

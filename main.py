@@ -4,6 +4,7 @@ LePetitCafe – Kassenbon-Drucker für Kinder.
 Drei Knöpfe → drei Spielszenarien → Thermodrucker.
 """
 
+import random
 import time
 import logging
 import sys
@@ -13,7 +14,7 @@ import RPi.GPIO as GPIO
 from escpos.printer import File, Network, Serial
 
 import config
-from receipts import layout
+from receipts import kaffeepause, layout
 
 # Welche Bon-Sprache gedruckt wird, steht in config.LANGUAGE. Die Generatoren
 # haben in beiden Sprachen dieselbe Schnittstelle, deshalb reicht es, hier das
@@ -50,6 +51,13 @@ SCHALTFLÄCHEN = {
 }
 
 _letzter_druck: dict[int, float] = {}
+
+# Für die Kaffeepause-Tastenkombination (siehe _combo_pin_bearbeiten):
+# Startzeitpunkt jedes gerade gehaltenen Kombi-Knopfs, und ob der Kaffeebon
+# für den aktuellen Kombi-Griff schon gedruckt wurde (verhindert, dass beim
+# Loslassen des zweiten Knopfs zusätzlich noch ein normaler Bon kommt).
+_combo_gehalten_seit: dict[int, float] = {}
+_combo_kaffee_ausgeloest = False
 
 
 def _drucker_verbinden():
@@ -115,15 +123,8 @@ def _bereit_bon(drucker) -> None:
     drucker.cut()
 
 
-def _knopf_gedrueckt(pin: int) -> None:
-    jetzt = time.monotonic()
-    if jetzt - _letzter_druck.get(pin, 0) < config.DEBOUNCE_SECONDS:
-        return
-    _letzter_druck[pin] = jetzt
-
-    name, bon_fn = SCHALTFLÄCHEN[pin]
-    log.info("Knopf gedrückt: %s", name)
-
+def _drucken(name: str, bon_fn) -> None:
+    log.info("Bon wird gedruckt: %s", name)
     try:
         drucker = _drucker_verbinden()
         bon_fn(drucker)
@@ -133,17 +134,87 @@ def _knopf_gedrueckt(pin: int) -> None:
         log.error("Druckfehler (%s): %s", name, exc)
 
 
+def _knopf_gedrueckt(pin: int) -> None:
+    jetzt = time.monotonic()
+    if jetzt - _letzter_druck.get(pin, 0) < config.DEBOUNCE_SECONDS:
+        return
+    _letzter_druck[pin] = jetzt
+
+    name, bon_fn = SCHALTFLÄCHEN[pin]
+
+    if (config.COFFEE_RANDOM_EVERY
+            and random.random() < 1 / config.COFFEE_RANDOM_EVERY):
+        _drucken("Kaffeepause (Zufall)", kaffeepause.erstelle_bon)
+        return
+
+    _drucken(name, bon_fn)
+
+
+def _combo_pin_bearbeiten(pin: int) -> None:
+    """
+    Eigener Handler für die beiden Kaffeepause-Kombi-Knöpfe (config.
+    COFFEE_COMBO). Registriert für steigende UND fallende Flanke (GPIO.BOTH),
+    weil wir - anders als bei den anderen vier Knöpfen - wissen müssen, wie
+    lange und ob beide gleichzeitig gehalten wurden. RPi.GPIO liefert dabei
+    keine Flankenrichtung mit, deshalb steht sie hier über den aktuellen
+    Pegel fest: LOW (wegen PUD_UP) = gerade gedrückt, HIGH = losgelassen.
+    """
+    global _combo_kaffee_ausgeloest
+
+    jetzt = time.monotonic()
+    gedrueckt = GPIO.input(pin) == GPIO.LOW
+
+    if gedrueckt:
+        _combo_gehalten_seit[pin] = jetzt
+        return
+
+    # Losgelassen.
+    start = _combo_gehalten_seit.pop(pin, jetzt)
+    dauer = jetzt - start
+    andere_pin = next(p for p in config.COFFEE_COMBO if p != pin)
+    andere_noch_gehalten = andere_pin in _combo_gehalten_seit
+
+    if _combo_kaffee_ausgeloest:
+        # Der Kaffeebon kam schon beim Loslassen des ersten Kombi-Knopfs -
+        # dieser zweite Release gehört noch dazu, löst aber nichts mehr aus.
+        _combo_kaffee_ausgeloest = False
+        return
+
+    if dauer >= config.COFFEE_HOLD_SECONDS and andere_noch_gehalten:
+        _combo_kaffee_ausgeloest = True
+        if jetzt - _letzter_druck.get(pin, 0) >= config.DEBOUNCE_SECONDS:
+            _letzter_druck[pin] = jetzt
+            _drucken("Kaffeepause (Kombi)", kaffeepause.erstelle_bon)
+        return
+
+    # Kein langer gemeinsamer Griff, nur ein normaler kurzer Druck auf einen
+    # der beiden Kombi-Knöpfe.
+    _knopf_gedrueckt(pin)
+
+
 def main() -> None:
     GPIO.setmode(GPIO.BCM)
 
     for pin in SCHALTFLÄCHEN:
         GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(
-            pin,
-            GPIO.FALLING,
-            callback=_knopf_gedrueckt,
-            bouncetime=300,
-        )
+        if pin in config.COFFEE_COMBO:
+            # Beide Flanken nötig, um Haltedauer und Gleichzeitigkeit zu
+            # erkennen (siehe _combo_pin_bearbeiten). Kürzeres bouncetime,
+            # damit ein schneller normaler Tipp nicht die Loslass-Flanke
+            # verschluckt - Mehrfachdrucke fängt ohnehin DEBOUNCE_SECONDS ab.
+            GPIO.add_event_detect(
+                pin,
+                GPIO.BOTH,
+                callback=_combo_pin_bearbeiten,
+                bouncetime=50,
+            )
+        else:
+            GPIO.add_event_detect(
+                pin,
+                GPIO.FALLING,
+                callback=_knopf_gedrueckt,
+                bouncetime=300,
+            )
 
     log.info("LePetitCafe gestartet – Drucker: %s (%d Zeichen breit)",
              _druckerziel(), config.PRINTER_WIDTH)
