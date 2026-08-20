@@ -11,6 +11,10 @@ User=pi
 # Access to /dev/usb/lp0 (root:lp) and /dev/ttyUSB0 (root:dialout)
 SupplementaryGroups=lp dialout
 WorkingDirectory=/home/pi/LePetitCafe
+# Python buffers stdout fully (not line-by-line) when it isn't a terminal,
+# so without this, log messages can sit unflushed for a long time instead
+# of showing up promptly in journalctl.
+Environment=PYTHONUNBUFFERED=1
 ExecStart=/usr/bin/python3 /home/pi/LePetitCafe/main.py
 Restart=on-failure
 RestartSec=10
