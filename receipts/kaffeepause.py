@@ -12,6 +12,17 @@ from datetime import datetime
 import config
 from . import layout
 
+# ASCII-Art-Herz statt eines echten Herz-Zeichens: Unicode-Herzen (♥, ❤, ♡)
+# liegen auf keiner Codepage dieses Druckers, auch das klassische DOS/CP437-
+# Herz an Bytewert 0x03 kennt Pythons eigener cp437-Codec nicht mehr.
+HERZ = [
+    "  **   **  ",
+    " ******** ",
+    "  ******  ",
+    "   ****   ",
+    "    **    ",
+]
+
 
 def erstelle_bon(drucker):
     now = datetime.now()
@@ -20,8 +31,9 @@ def erstelle_bon(drucker):
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text("LE PETIT CAFÉ\n")
-    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
+    drucker.set(normal_textsize=True, align="center", bold=True, double_height=True, double_width=False)
     drucker.text("*  Sonderbestellung  *\n")
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False)
     drucker.text(layout.divider())
 
     drucker.set(align="left")
@@ -40,5 +52,9 @@ def erstelle_bon(drucker):
     drucker.text(layout.wrapped("Einzulösen: sofort, ohne Wartezeit"))
     drucker.text("\n")
     drucker.text(layout.wrapped("*  Danke, dass du das machst!  *"))
-    drucker.text("* * *\n")
+    drucker.text("\n")
+    drucker.set(bold=True)
+    for zeile in HERZ:
+        drucker.text(zeile + "\n")
+    drucker.set(normal_textsize=True, bold=False)
     drucker.cut()
