@@ -4,6 +4,8 @@
 
 Press a button → a unique, randomly generated receipt comes rattling out of the printer. Perfect for playing supermarket, ice cream café, restaurant, bus/taxi, cinema, or table reservation.
 
+![The finished setup: thermal printer, toy till, and six arcade buttons wired into a Raspberry Pi](docs/behind-the-scenes/finished-setup.jpg)
+
 ![Receipt preview](docs/preview.png)
 
 ---
@@ -19,8 +21,6 @@ Available in 🇩🇪 German and 🇬🇧 English.
 ---
 
 ## The story behind it
-
-![The finished setup](docs/behind-the-scenes/finished-setup.jpg)
 
 Why this exists, how the wiring actually came together, and a video of the first real print: **[Behind the Scenes](BEHIND-THE-SCENES.md)**.
 
