@@ -34,9 +34,7 @@ But it works. My kids press a button and a real receipt comes out, every time, a
 
 ## First real print
 
-<video src="docs/behind-the-scenes/first-print.mp4" controls width="480">
-  Video won't play inline? <a href="docs/behind-the-scenes/first-print.mp4">Watch/download it directly</a>.
-</video>
+📹 **[Watch the video](docs/behind-the-scenes/first-print.mp4)** (GitHub plays it inline once you click through)
 
 ## Try it yourself
 
