@@ -105,16 +105,23 @@ def _bereit_bon(drucker) -> None:
     drucker.set(align="center", bold=True, double_height=True)
     drucker.text("BEREIT – auf geht's!\n")
     drucker.set(normal_textsize=True, align="center", bold=False, double_height=False)
+    drucker.text("\n")
     drucker.text(f"{datetime.now().strftime('%d.%m.%Y  %H:%M')}\n")
     drucker.text(layout.divider())
     drucker.text("\n")
+    drucker.set(bold=True)
     drucker.text("Drück einen Knopf:\n\n")
-    drucker.text("ROT     Supermarkt\n")
-    drucker.text("BLAU    Eiscafé\n")
-    drucker.text("GRUEN   Restaurant\n")
-    drucker.text("GELB    Bus/Taxi\n")
-    drucker.text("SCHWARZ KinderKino\n")
-    drucker.text("WEISS   Reservierung\n")
+    drucker.set(align="left", double_height=True)
+    for farbe, welt in (
+        ("ROT",     "Supermarkt"),
+        ("BLAU",    "Eiscafé"),
+        ("GRUEN",   "Restaurant"),
+        ("GELB",    "Bus/Taxi"),
+        ("SCHWARZ", "KinderKino"),
+        ("WEISS",   "Reservierung"),
+    ):
+        drucker.text(f"{farbe:<8}{welt}\n")
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False)
     drucker.cut()
 
 
