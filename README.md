@@ -18,6 +18,14 @@ Available in 🇩🇪 German and 🇬🇧 English.
 
 ---
 
+## The story behind it
+
+![The finished setup](docs/behind-the-scenes/finished-setup.jpg)
+
+Why this exists, how the wiring actually came together, and a video of the first real print: **[Behind the Scenes](BEHIND-THE-SCENES.md)**.
+
+---
+
 ## How it works
 
 ```
