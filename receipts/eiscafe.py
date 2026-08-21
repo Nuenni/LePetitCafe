@@ -85,7 +85,7 @@ def erstelle_bon(drucker):
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
-    drucker.set(align="center", bold=False, double_height=False, double_width=False)
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
     drucker.text("*  " + SLOGAN + "  *\n")
     drucker.text(layout.wrapped("Seepromenade 3 · 12345 Sonnenstadt"))
     drucker.text(layout.divider())
@@ -107,7 +107,7 @@ def erstelle_bon(drucker):
     drucker.text(layout.divider("═"))
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("GESAMT", layout.money(summe)))
-    drucker.set(bold=False, double_height=False)
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
 
     drucker.text(layout.divider())
     drucker.set(align="center")

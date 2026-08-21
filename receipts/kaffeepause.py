@@ -20,7 +20,7 @@ def erstelle_bon(drucker):
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text("LE PETIT CAFÉ\n")
-    drucker.set(align="center", bold=False, double_height=False, double_width=False)
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
     drucker.text("*  Sonderbestellung  *\n")
     drucker.text(layout.divider())
 

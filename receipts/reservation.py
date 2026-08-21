@@ -69,21 +69,21 @@ def erstelle_bon(printer):
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
-    printer.set(align="center", bold=False, double_height=False,
+    printer.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     printer.text("*  7 Market Square  *\n")
     printer.text(layout.divider())
 
     printer.set(align="center", bold=True, double_height=True)
     printer.text("TABLE RESERVED\n")
-    printer.set(align="left", bold=False, double_height=False)
+    printer.set(normal_textsize=True, align="left", bold=False, double_height=False)
     printer.text(layout.divider())
 
     # The three details that matter – large enough to show at the door
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("TABLE", str(table)))
     printer.text(layout.row("SEAT", str(seat)))
-    printer.set(bold=False, double_height=False)
+    printer.set(normal_textsize=True, bold=False, double_height=False)
     printer.text(layout.row("People", str(people)))
     printer.text(layout.divider())
 

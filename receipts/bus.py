@@ -52,7 +52,7 @@ def _strecke() -> tuple[str, str]:
 def _kopf(drucker, name: str, slogan: str) -> None:
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{name}\n")
-    drucker.set(align="center", bold=False, double_height=False,
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     drucker.text(f"*  {slogan}  *\n")
     drucker.text(layout.divider())
@@ -80,7 +80,7 @@ def _bus(drucker):
 
     drucker.set(align="center", bold=True, double_height=True)
     drucker.text(f"{art.upper()}\n")
-    drucker.set(align="left", bold=False, double_height=False)
+    drucker.set(normal_textsize=True, align="left", bold=False, double_height=False)
     drucker.text(layout.divider())
 
     drucker.text(layout.row("Linie", str(linie)))
@@ -94,7 +94,7 @@ def _bus(drucker):
 
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("ZU ZAHLEN", layout.money(preis)))
-    drucker.set(bold=False, double_height=False)
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
 
     _fuss(drucker, "Bitte beim Einsteigen vorzeigen", f"BUS{nummer:05d}")
 
@@ -131,6 +131,6 @@ def _taxi(drucker):
                             layout.money(strecke)))
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("ZU ZAHLEN", layout.money(summe)))
-    drucker.set(bold=False, double_height=False)
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
 
     _fuss(drucker, "Gute Fahrt und bis zum nächsten Mal!", f"TAXI{nummer:04d}")

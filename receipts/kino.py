@@ -63,7 +63,7 @@ def erstelle_bon(drucker):
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text("KINDERKINO\n")
-    drucker.set(align="center", bold=False, double_height=False,
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     drucker.text("*  Film ab!  *\n")
     drucker.text(layout.divider())
@@ -71,7 +71,7 @@ def erstelle_bon(drucker):
     # Filmtitel groß – das ist die Information, die zählt
     drucker.set(align="center", bold=True, double_height=True)
     drucker.text(layout.wrapped(film.upper()))
-    drucker.set(align="left", bold=False, double_height=False)
+    drucker.set(normal_textsize=True, align="left", bold=False, double_height=False)
     drucker.text(layout.divider())
 
     drucker.text(layout.row("Saal", str(saal)))
@@ -99,7 +99,7 @@ def erstelle_bon(drucker):
     drucker.text(layout.divider())
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("GESAMT", layout.money(summe)))
-    drucker.set(bold=False, double_height=False)
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
 
     drucker.set(align="center")
     drucker.text("\n")

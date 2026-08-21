@@ -73,21 +73,21 @@ def erstelle_bon(drucker):
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
-    drucker.set(align="center", bold=False, double_height=False,
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     drucker.text("*  Marktplatz 7  *\n")
     drucker.text(layout.divider())
 
     drucker.set(align="center", bold=True, double_height=True)
     drucker.text("TISCH RESERVIERT\n")
-    drucker.set(align="left", bold=False, double_height=False)
+    drucker.set(normal_textsize=True, align="left", bold=False, double_height=False)
     drucker.text(layout.divider())
 
     # Die drei Angaben, auf die es ankommt – groß genug zum Vorzeigen
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("TISCH", str(tisch)))
     drucker.text(layout.row("PLATZ", str(platz)))
-    drucker.set(bold=False, double_height=False)
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
     drucker.text(layout.row("Personen", str(personen)))
     drucker.text(layout.divider())
 

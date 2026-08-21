@@ -52,7 +52,7 @@ def _route() -> tuple[str, str]:
 def _head(printer, name: str, slogan: str) -> None:
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{name}\n")
-    printer.set(align="center", bold=False, double_height=False,
+    printer.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     printer.text(f"*  {slogan}  *\n")
     printer.text(layout.divider())
@@ -80,7 +80,7 @@ def _bus(printer):
 
     printer.set(align="center", bold=True, double_height=True)
     printer.text(f"{kind.upper()}\n")
-    printer.set(align="left", bold=False, double_height=False)
+    printer.set(normal_textsize=True, align="left", bold=False, double_height=False)
     printer.text(layout.divider())
 
     printer.text(layout.row("Line", str(line)))
@@ -94,7 +94,7 @@ def _bus(printer):
 
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("TO PAY", layout.money(price)))
-    printer.set(bold=False, double_height=False)
+    printer.set(normal_textsize=True, bold=False, double_height=False)
 
     _foot(printer, "Please show when boarding", f"BUS{number:05d}")
 
@@ -130,6 +130,6 @@ def _taxi(printer):
     printer.text(layout.row(f"{km:.1f} km at 2.10€", layout.money(distance)))
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("TO PAY", layout.money(total)))
-    printer.set(bold=False, double_height=False)
+    printer.set(normal_textsize=True, bold=False, double_height=False)
 
     _foot(printer, "Safe travels, and see you next time!", f"TAXI{number:04d}")
