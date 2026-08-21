@@ -380,6 +380,7 @@ print('Success!')
 
 ## Enclosure ideas
 
+- [**Drilling template**](docs/drilling-template.pdf) for the six button holes — A4, 1:1, no printed border (print at 100% scale, align the sheet's own top-left corner to the lid's front-left corner). Regenerate with `python3 drilling_template.py` (needs `pip install reportlab`).
 - **Wooden box** from a hardware store — hole for printer on top, six button holes on front
 - **IKEA MOPPE** mini drawer unit — drawers as shopping basket, buttons on top
 - **3D print** — enclosure designs welcome as PRs!
