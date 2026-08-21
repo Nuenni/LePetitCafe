@@ -63,7 +63,7 @@ def erstelle_bon(printer):
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text("CINÉMA PETIT\n")
-    printer.set(align="center", bold=False, double_height=False,
+    printer.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     printer.text("*  Roll film!  *\n")
     printer.text(layout.divider())
@@ -71,7 +71,7 @@ def erstelle_bon(printer):
     # The film title large – that's the information that matters
     printer.set(align="center", bold=True, double_height=True)
     printer.text(layout.wrapped(film.upper()))
-    printer.set(align="left", bold=False, double_height=False)
+    printer.set(normal_textsize=True, align="left", bold=False, double_height=False)
     printer.text(layout.divider())
 
     printer.text(layout.row("Screen", str(screen)))
@@ -99,7 +99,7 @@ def erstelle_bon(printer):
     printer.text(layout.divider())
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("TOTAL", layout.money(total)))
-    printer.set(bold=False, double_height=False)
+    printer.set(normal_textsize=True, bold=False, double_height=False)
 
     printer.set(align="center")
     printer.text("\n")

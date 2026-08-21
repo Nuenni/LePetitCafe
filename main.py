@@ -100,7 +100,7 @@ def _bereit_bon(drucker) -> None:
     """
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text("LE PETIT CAFÉ\n")
-    drucker.set(align="center", bold=False, double_height=False, double_width=False)
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
     drucker.text(layout.divider())
     drucker.text("BEREIT – auf geht's!\n")
     drucker.text(f"{datetime.now().strftime('%d.%m.%Y  %H:%M')}\n")

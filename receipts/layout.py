@@ -113,7 +113,7 @@ def codes(drucker, qr_text: str, bon_nummer: str, hinweis: str) -> None:
     handled by the printer itself anyway, driven by the
     drucker.set(align="center") right above.
     """
-    drucker.set(align="center", bold=False, double_height=False,
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False,
                 double_width=False)
     drucker.text("\n")
     try:

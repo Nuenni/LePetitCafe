@@ -58,7 +58,7 @@ def erstelle_bon(printer):
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
-    printer.set(align="center", bold=False, double_height=False, double_width=False)
+    printer.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
     printer.text(f"{SLOGAN}\n")
     printer.text("12 Main St · 12345 Pleasantville\n")
     printer.text("Tel: 01234 / 567890\n")
@@ -87,7 +87,7 @@ def erstelle_bon(printer):
     printer.text(layout.row("Cash given", layout.money(paid)))
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("CHANGE", layout.money(change)))
-    printer.set(bold=False, double_height=False)
+    printer.set(normal_textsize=True, bold=False, double_height=False)
     printer.text(layout.divider())
     printer.set(align="center")
     printer.text(f"{random.choice(_phrases())}\n")

@@ -58,7 +58,7 @@ def erstelle_bon(drucker):
 
     drucker.set(align="center", bold=True, double_height=True, double_width=True)
     drucker.text(f"{LADEN_NAME}\n")
-    drucker.set(align="center", bold=False, double_height=False, double_width=False)
+    drucker.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
     drucker.text(f"{SLOGAN}\n")
     drucker.text("Hauptstr. 12 · 12345 Musterstadt\n")
     drucker.text("Tel: 01234 / 567890\n")
@@ -87,7 +87,7 @@ def erstelle_bon(drucker):
     drucker.text(layout.row("Gegeben (Bar)", layout.money(gezahlt)))
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("RUECKGELD", layout.money(rueck)))
-    drucker.set(bold=False, double_height=False)
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
 
     drucker.text(layout.divider())
     drucker.set(align="center")

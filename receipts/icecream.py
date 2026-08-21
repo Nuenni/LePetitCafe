@@ -84,7 +84,7 @@ def erstelle_bon(printer):
 
     printer.set(align="center", bold=True, double_height=True, double_width=True)
     printer.text(f"{STORE_NAME}\n")
-    printer.set(align="center", bold=False, double_height=False, double_width=False)
+    printer.set(normal_textsize=True, align="center", bold=False, double_height=False, double_width=False)
     printer.text(layout.wrapped("*  " + SLOGAN + "  *"))
     printer.text(layout.wrapped("3 Lake Promenade · 12345 Sunnyville"))
     printer.text(layout.divider())
@@ -106,7 +106,7 @@ def erstelle_bon(printer):
     printer.text(layout.divider("═"))
     printer.set(bold=True, double_height=True)
     printer.text(layout.row("TOTAL", layout.money(subtotal)))
-    printer.set(bold=False, double_height=False)
+    printer.set(normal_textsize=True, bold=False, double_height=False)
     printer.text(layout.divider())
     printer.set(align="center")
     printer.text("Payment: Cash\n")
