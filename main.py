@@ -14,7 +14,7 @@ import RPi.GPIO as GPIO
 from escpos.printer import File, Network, Serial
 
 import config
-from receipts import kaffeepause, layout
+from receipts import kaffeepause, layout, rezeptideen
 
 # Which receipt language gets printed is set in config.LANGUAGE. The
 # generators have the same interface in both languages, so it's enough to
@@ -51,6 +51,17 @@ SCHALTFLÄCHEN = {
 }
 
 _letzter_druck: dict[int, float] = {}
+
+# Every secret button combo: which two pins, what to log it as, and which
+# receipt function to call when it triggers.
+KOMBIS = (
+    (config.COFFEE_COMBO, "Coffee break (combo)", kaffeepause.erstelle_bon),
+    (config.RECIPE_COMBO, "Recipe idea (combo)", rezeptideen.erstelle_bon),
+)
+# Reverse lookup: pin -> the combo tuple it belongs to (if any).
+_KOMBI_PIN_ZU_PAAR = {
+    pin: paar for paar, _, _ in KOMBIS for pin in paar
+}
 
 
 def _drucker_verbinden():
@@ -192,9 +203,10 @@ def main() -> None:
     # Last known level per pin, to detect press (HIGH->LOW) and release
     # (LOW->HIGH) transitions while polling.
     letzter_pegel = {pin: GPIO.HIGH for pin in SCHALTFLÄCHEN}
-    # Timestamp a coffee-break combo button (config.COFFEE_COMBO) went down.
+    # Timestamp a combo button went down, and which combo pair already fired
+    # (so releasing the second button of a triggered pair doesn't double-print).
     combo_gehalten_seit: dict[int, float] = {}
-    combo_kaffee_ausgeloest = False
+    combo_ausgeloest: dict[tuple, bool] = {}
 
     try:
         while True:
@@ -207,12 +219,13 @@ def main() -> None:
                 if pegel == war:
                     continue
 
-                if pin not in config.COFFEE_COMBO:
+                paar = _KOMBI_PIN_ZU_PAAR.get(pin)
+                if paar is None:
                     if pegel == GPIO.LOW:
                         _knopf_gedrueckt(pin)
                     continue
 
-                # One of the two coffee-break combo buttons changed state.
+                # One of this combo's two buttons changed state.
                 # RPi.GPIO's classic PUD_UP wiring means LOW = pressed.
                 if pegel == GPIO.LOW:
                     combo_gehalten_seit[pin] = jetzt
@@ -221,25 +234,26 @@ def main() -> None:
                 # Released.
                 start = combo_gehalten_seit.pop(pin, jetzt)
                 dauer = jetzt - start
-                andere_pin = next(p for p in config.COFFEE_COMBO if p != pin)
+                andere_pin = next(p for p in paar if p != pin)
                 andere_noch_gehalten = andere_pin in combo_gehalten_seit
 
-                if combo_kaffee_ausgeloest:
-                    # The coffee receipt already fired when the first combo
-                    # button was released - this second release still
-                    # belongs to it, but no longer triggers anything itself.
-                    combo_kaffee_ausgeloest = False
+                if combo_ausgeloest.get(paar):
+                    # This combo already fired when the first button was
+                    # released - this second release still belongs to it,
+                    # but no longer triggers anything itself.
+                    combo_ausgeloest[paar] = False
                     continue
 
-                if dauer >= config.COFFEE_HOLD_SECONDS and andere_noch_gehalten:
-                    combo_kaffee_ausgeloest = True
+                if dauer >= config.COMBO_HOLD_SECONDS and andere_noch_gehalten:
+                    combo_ausgeloest[paar] = True
                     if jetzt - _letzter_druck.get(pin, 0) >= config.DEBOUNCE_SECONDS:
                         _letzter_druck[pin] = jetzt
-                        _drucken("Coffee break (combo)", kaffeepause.erstelle_bon)
+                        _, label, bon_fn = next(k for k in KOMBIS if k[0] == paar)
+                        _drucken(label, bon_fn)
                     continue
 
                 # Not a long joint hold, just a normal short press on one of
-                # the two combo buttons.
+                # this combo's two buttons.
                 _knopf_gedrueckt(pin)
 
             time.sleep(0.02)

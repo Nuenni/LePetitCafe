@@ -4,7 +4,7 @@ from datetime import datetime
 from . import layout
 import config
 
-LADEN_NAME = "PETIT MARCHÉ"
+LADEN_NAME = "LE PETIT MARCHÉ"
 SLOGAN     = "Frisch. Lecker. Günstig."
 
 SORTIMENT = [

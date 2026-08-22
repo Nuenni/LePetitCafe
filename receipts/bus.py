@@ -112,7 +112,7 @@ def _taxi(drucker):
     strecke = round(km * pro_km, 2)
     summe = grundpreis + strecke
 
-    _kopf(drucker, "PETIT TAXI", "Immer für Sie da")
+    _kopf(drucker, "LE PETIT TAXI", "Immer für Sie da")
 
     drucker.set(align="left")
     drucker.text(layout.row("Wagen-Nr.", f"{wagen:02d}"))
