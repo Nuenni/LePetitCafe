@@ -16,7 +16,7 @@ import config
 MODULE = [
     "supermarkt", "eiscafe", "restaurant", "bus", "kino", "reservierung",
     "supermarket", "icecream", "bistro", "transit", "cinema", "reservation",
-    "kaffeepause",
+    "kaffeepause", "rezeptideen",
 ]
 BREITEN = [48, 42, 32]   # 80mm (TM-T20II), 80mm (other models), 58mm paper
 DURCHLAEUFE = 50

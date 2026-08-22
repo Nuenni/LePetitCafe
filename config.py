@@ -57,12 +57,19 @@ COFFEE_FOR = "Mama"
 # chosen game. None = disables the random share entirely.
 COFFEE_RANDOM_EVERY = 13
 
-# Holding these two buttons together for ~COFFEE_HOLD_SECONDS deliberately
+# Holding these two buttons together for ~COMBO_HOLD_SECONDS deliberately
 # triggers the coffee receipt, instead of the two normal play worlds.
 # Deliberately two buttons far apart from each other (red + white), so this
 # doesn't happen by accident during normal button mashing.
 COFFEE_COMBO = (GPIO_SUPERMARKT, GPIO_RESERVIERUNG)
-COFFEE_HOLD_SECONDS = 1.2
+
+# Same idea, second secret receipt: holding yellow + green together prints a
+# quick dinner idea instead of Bus/Taxi or Restaurant - for evenings where
+# nobody knows what to cook. Press it again for another suggestion.
+RECIPE_COMBO = (GPIO_BUS, GPIO_RESTAURANT)
+
+# Shared hold duration for both combos above.
+COMBO_HOLD_SECONDS = 1.2
 
 # Print a small "ready" receipt on startup.
 # Stands in for a ready LED: paper comes out = the Pi has booted and the
