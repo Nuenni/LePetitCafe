@@ -12,6 +12,7 @@ generated randomly, each generator runs many times.
 import sys
 
 import config
+from receipts import ping as ping_module
 
 MODULE = [
     "supermarkt", "eiscafe", "restaurant", "bus", "kino", "reservierung",
@@ -58,6 +59,9 @@ class TextPrinter:
     def barcode(self, code, bc, **_):
         pass
 
+    def image(self, img, **_):
+        pass
+
 
 def main() -> int:
     fehler = []
@@ -86,6 +90,29 @@ def main() -> int:
                     fehler.append((breite, name, zeile))
             else:
                 print(f"  ✓ {name:<12} {DURCHLAEUFE} receipts")
+
+        # ping.erstelle_bon() takes extra arguments, so it doesn't fit the
+        # MODULE loop above - checked separately with representative input.
+        zu_lang = set()
+        for nachricht in (
+            "Kurz",
+            "Ein etwas laengerer Test-Text fuer den Ping-Bon, der ueber "
+            "mehrere Zeilen umbrechen sollte, damit wir den Zeilenumbruch "
+            "im Rahmen pruefen koennen.",
+        ):
+            drucker = TextPrinter()
+            ping_module.erstelle_bon(drucker, nachricht, von="Testperson")
+            for zeile, doppelt_breit in drucker.zeilen:
+                grenze = breite // 2 if doppelt_breit else breite
+                if len(zeile) > grenze:
+                    zu_lang.add((len(zeile), grenze, zeile))
+        if zu_lang:
+            print("  ✗ ping")
+            for laenge, grenze, zeile in sorted(zu_lang):
+                print(f"      {laenge} > {grenze}: {zeile!r}")
+                fehler.append((breite, "ping", zeile))
+        else:
+            print(f"  ✓ {'ping':<12} 2 receipts")
 
     if fehler:
         print(f"\n✗ {len(fehler)} line(s) too long.")

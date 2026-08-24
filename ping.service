@@ -1,0 +1,18 @@
+[Unit]
+Description=LePetitCafe Ping web page
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+SupplementaryGroups=lp dialout
+WorkingDirectory=/home/pi/LePetitCafe
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /home/pi/LePetitCafe/ping_app.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
