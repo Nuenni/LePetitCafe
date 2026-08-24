@@ -11,9 +11,9 @@ import sys
 from datetime import datetime
 
 import RPi.GPIO as GPIO
-from escpos.printer import File, Network, Serial
 
 import config
+import printer
 from receipts import kaffeepause, layout, rezeptideen
 
 # Which receipt language gets printed is set in config.LANGUAGE. The
@@ -64,29 +64,6 @@ _KOMBI_PIN_ZU_PAAR = {
 }
 
 
-def _drucker_verbinden():
-    """Connect to the printer - over USB, RS232, or the home network."""
-    if config.PRINTER_MODE == "network":
-        return Network(config.PRINTER_IP, port=config.PRINTER_PORT, timeout=5)
-    if config.PRINTER_MODE == "serial":
-        return Serial(
-            devfile=config.SERIAL_DEVICE,
-            baudrate=config.SERIAL_BAUDRATE,
-            dsrdtr=config.SERIAL_DSRDTR,
-            timeout=5,
-        )
-    return File(config.PRINTER_DEVICE)
-
-
-def _druckerziel() -> str:
-    """Describes where output is going, for the log."""
-    if config.PRINTER_MODE == "network":
-        return f"{config.PRINTER_IP}:{config.PRINTER_PORT}"
-    if config.PRINTER_MODE == "serial":
-        return f"{config.SERIAL_DEVICE} @ {config.SERIAL_BAUDRATE} Baud"
-    return config.PRINTER_DEVICE
-
-
 def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
     """
     At boot, the USB printer is often not enumerated yet. So retry a few
@@ -94,7 +71,7 @@ def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
     """
     for versuch in range(1, versuche + 1):
         try:
-            _drucker_verbinden().close()
+            printer.connect().close()
             return True
         except Exception as exc:
             log.warning(
@@ -139,7 +116,7 @@ def _bereit_bon(drucker) -> None:
 def _drucken(name: str, bon_fn) -> None:
     log.info("Printing receipt: %s", name)
     try:
-        drucker = _drucker_verbinden()
+        drucker = printer.connect()
         bon_fn(drucker)
         drucker.close()
         log.info("Receipt printed: %s", name)
@@ -176,7 +153,7 @@ def main() -> None:
         GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     log.info("LePetitCafe started - printer: %s (%d columns wide)",
-             _druckerziel(), config.PRINTER_WIDTH)
+             printer.target(), config.PRINTER_WIDTH)
     log.info(
         "Pins: Supermarkt=GPIO%d  Eiscafe=GPIO%d  Restaurant=GPIO%d  "
         "Bus/Taxi=GPIO%d  KinderKino=GPIO%d  Reservierung=GPIO%d",
@@ -191,7 +168,7 @@ def main() -> None:
     if config.PRINT_READY_RECEIPT:
         if _auf_drucker_warten():
             try:
-                drucker = _drucker_verbinden()
+                drucker = printer.connect()
                 _bereit_bon(drucker)
                 drucker.close()
             except Exception as exc:
