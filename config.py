@@ -32,6 +32,12 @@ PRINTER_PORT = 9100
 # noticeable unprinted strip on the right: adjust this here.
 PRINTER_WIDTH = 48
 
+# Printable width in dots, for images (e.g. the Ping receipt). python-escpos
+# does not scale images to fit the paper - anything wider just gets cut off
+# on the right. 72mm usable width at 203dpi = 72 / 25.4 * 203 ≈ 576 dots.
+# 58mm paper (mini/battery printers) -> 384.
+PRINTER_IMAGE_WIDTH_PX = 576
+
 # ─── Buttons ──────────────────────────────────────────────────────────────
 # GPIO pin numbers (BCM numbering) of the six arcade buttons.
 # 23/24/25 are, like 17/27/22, plain GPIO pins with no special function, so
