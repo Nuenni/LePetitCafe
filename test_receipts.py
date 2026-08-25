@@ -13,6 +13,7 @@ import sys
 
 import config
 from receipts import ping as ping_module
+from receipts import scankasse
 
 MODULE = [
     "supermarkt", "eiscafe", "restaurant", "bus", "kino", "reservierung",
@@ -113,6 +114,27 @@ def main() -> int:
                 fehler.append((breite, "ping", zeile))
         else:
             print(f"  ✓ {'ping':<12} 2 receipts")
+
+        # scankasse.erstelle_bon() doesn't exist - it prints in three separate
+        # steps (kopf/artikel/abschluss) instead, so it's checked separately.
+        katalog = [("Testartikel", 1.23), ("Ein anderer Testartikel", 4.56)]
+        zu_lang = set()
+        for _ in range(DURCHLAEUFE):
+            drucker = TextPrinter()
+            bon_nr = scankasse.kopf(drucker, "LE PETIT TEST", "Ein Test-Slogan")
+            positionen = [scankasse.artikel(drucker, katalog) for _ in range(5)]
+            scankasse.abschluss(drucker, positionen, bon_nr)
+            for zeile, doppelt_breit in drucker.zeilen:
+                grenze = breite // 2 if doppelt_breit else breite
+                if len(zeile) > grenze:
+                    zu_lang.add((len(zeile), grenze, zeile))
+        if zu_lang:
+            print("  ✗ scankasse")
+            for laenge, grenze, zeile in sorted(zu_lang):
+                print(f"      {laenge} > {grenze}: {zeile!r}")
+                fehler.append((breite, "scankasse", zeile))
+        else:
+            print(f"  ✓ {'scankasse':<12} {DURCHLAEUFE} receipts")
 
     if fehler:
         print(f"\n✗ {len(fehler)} line(s) too long.")

@@ -2,3 +2,4 @@ python-escpos>=3.0
 RPi.GPIO>=0.7
 Flask>=3.0
 Pillow>=10.0
+evdev>=1.6
