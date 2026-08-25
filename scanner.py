@@ -22,30 +22,21 @@ log = logging.getLogger(__name__)
 _ENTER_KEYS = {"KEY_ENTER", "KEY_KPENTER"}
 
 
-def _scanner_device():
+def _scanner_devices() -> list:
     """
-    Finds the scanner among all input devices by a substring of its reported
-    name (config.SCANNER_NAME_HINT). Find the real name on the Pi with:
+    Finds every input device whose reported name contains
+    config.SCANNER_NAME_HINT - so two identical scanners both get picked up,
+    each listened to on its own thread. Find the real name on the Pi with:
         cat /proc/bus/input/devices
     """
-    for pfad in list_devices():
-        geraet = InputDevice(pfad)
-        if config.SCANNER_NAME_HINT.lower() in geraet.name.lower():
-            return geraet
-    return None
+    return [
+        InputDevice(pfad) for pfad in list_devices()
+        if config.SCANNER_NAME_HINT.lower() in InputDevice(pfad).name.lower()
+    ]
 
 
-def _lauschen(auf_scan) -> None:
-    geraet = _scanner_device()
-    if geraet is None:
-        log.warning(
-            "Scanner not found (looking for a device name containing %r) - "
-            "scanning disabled. Check with: cat /proc/bus/input/devices",
-            config.SCANNER_NAME_HINT,
-        )
-        return
-
-    log.info("Scanner connected: %s", geraet.name)
+def _lauschen(geraet, auf_scan) -> None:
+    log.info("Scanner connected: %s (%s)", geraet.name, geraet.path)
     hat_zeichen = False
     for event in geraet.read_loop():
         if event.type != ecodes.EV_KEY or event.value != 1:  # only "key down"
@@ -61,11 +52,26 @@ def _lauschen(auf_scan) -> None:
             hat_zeichen = True
 
 
-def starten(auf_scan) -> threading.Thread:
+def starten(auf_scan) -> list[threading.Thread]:
     """
-    Starts listening in a background thread and returns it. main.py's GPIO
-    polling loop keeps running independently on the main thread.
+    Starts one background thread per connected scanner (there can be more
+    than one, e.g. so two kids can scan at once) and returns them all.
+    main.py's GPIO polling loop keeps running independently on the main
+    thread. All scanners feed the same auf_scan callback - main.py doesn't
+    need to know or care which physical scanner a given scan came from.
     """
-    thread = threading.Thread(target=_lauschen, args=(auf_scan,), daemon=True)
-    thread.start()
-    return thread
+    geraete = _scanner_devices()
+    if not geraete:
+        log.warning(
+            "No scanner found (looking for a device name containing %r) - "
+            "scanning disabled. Check with: cat /proc/bus/input/devices",
+            config.SCANNER_NAME_HINT,
+        )
+        return []
+
+    threads = []
+    for geraet in geraete:
+        thread = threading.Thread(target=_lauschen, args=(geraet, auf_scan), daemon=True)
+        thread.start()
+        threads.append(thread)
+    return threads
