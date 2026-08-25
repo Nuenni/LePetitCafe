@@ -5,6 +5,7 @@ Six buttons -> six play scenarios -> thermal printer.
 """
 
 import random
+import threading
 import time
 import logging
 import sys
@@ -14,7 +15,8 @@ import RPi.GPIO as GPIO
 
 import config
 import printer
-from receipts import kaffeepause, layout, rezeptideen
+import scanner
+from receipts import kaffeepause, layout, rezeptideen, scankasse
 
 # Which receipt language gets printed is set in config.LANGUAGE. The
 # generators have the same interface in both languages, so it's enough to
@@ -62,6 +64,32 @@ KOMBIS = (
 _KOMBI_PIN_ZU_PAAR = {
     pin: paar for paar, _, _ in KOMBIS for pin in paar
 }
+
+# Worlds a scanner checkout session can start as. Reuses each world's own
+# name/slogan/catalog attributes, whose exact names differ between the DE
+# and EN receipt modules (e.g. LADEN_NAME vs. STORE_NAME) - _welt_daten()
+# below papers over that so scankasse.py itself doesn't need to know.
+def _welt_daten(modul):
+    name = getattr(modul, "LADEN_NAME", None) or modul.STORE_NAME
+    katalog_roh = (getattr(modul, "SORTIMENT", None) or getattr(modul, "KARTE", None)
+                   or getattr(modul, "ITEMS", None) or modul.MENU)
+    katalog = [(eintrag[0], eintrag[1]) for eintrag in katalog_roh]
+    return name, modul.SLOGAN, katalog
+
+
+_SCAN_WELTEN = {
+    "markt": _welt_daten(welt_markt),
+    "eis":   _welt_daten(welt_eis),
+}
+
+# Guards every printer access - both the regular button presses below and
+# the scanner callbacks running on their own thread (scanner.py) - so two
+# print jobs can never interleave on the wire.
+_druck_lock = threading.Lock()
+
+# None when idle, otherwise a dict describing the receipt currently growing
+# on the printer: {"name", "slogan", "katalog", "positionen", "bon_nr", "letzter_scan"}.
+_scan_sitzung: dict | None = None
 
 
 def _auf_drucker_warten(versuche: int = 10, pause: float = 3.0) -> bool:
@@ -116,12 +144,63 @@ def _bereit_bon(drucker) -> None:
 def _drucken(name: str, bon_fn) -> None:
     log.info("Printing receipt: %s", name)
     try:
-        drucker = printer.connect()
-        bon_fn(drucker)
-        drucker.close()
+        with _druck_lock:
+            drucker = printer.connect()
+            bon_fn(drucker)
+            drucker.close()
         log.info("Receipt printed: %s", name)
     except Exception as exc:
         log.error("Print error (%s): %s", name, exc)
+
+
+def _scan_ereignis() -> None:
+    """
+    Called from scanner.py's background thread once per completed barcode
+    scan. Starts a new checkout session on the first scan, or adds one more
+    item if a session is already growing.
+    """
+    global _scan_sitzung
+    with _druck_lock:
+        jetzt = time.monotonic()
+        try:
+            drucker = printer.connect()
+            if _scan_sitzung is None:
+                welt_name, welt_slogan, welt_katalog = random.choice(list(_SCAN_WELTEN.values()))
+                bon_nr = scankasse.kopf(drucker, welt_name, welt_slogan)
+                artikel = scankasse.artikel(drucker, welt_katalog)
+                _scan_sitzung = {
+                    "katalog": welt_katalog,
+                    "positionen": [artikel],
+                    "bon_nr": bon_nr,
+                    "letzter_scan": jetzt,
+                }
+                log.info("Scan checkout started: %s", welt_name)
+            else:
+                artikel = scankasse.artikel(drucker, _scan_sitzung["katalog"])
+                _scan_sitzung["positionen"].append(artikel)
+                _scan_sitzung["letzter_scan"] = jetzt
+                log.info("Scan checkout item added: %s (%d total)",
+                         artikel[0], len(_scan_sitzung["positionen"]))
+            drucker.close()
+        except Exception as exc:
+            log.error("Scan print error: %s", exc)
+
+
+def _scan_abschliessen() -> None:
+    """Ends the current checkout session (timeout, or any button pressed)."""
+    global _scan_sitzung
+    with _druck_lock:
+        if _scan_sitzung is None:
+            return
+        sitzung = _scan_sitzung
+        _scan_sitzung = None
+        log.info("Scan checkout finished (%d items)", len(sitzung["positionen"]))
+        try:
+            drucker = printer.connect()
+            scankasse.abschluss(drucker, sitzung["positionen"], sitzung["bon_nr"])
+            drucker.close()
+        except Exception as exc:
+            log.error("Scan checkout print error: %s", exc)
 
 
 def _knopf_gedrueckt(pin: int) -> None:
@@ -177,6 +256,8 @@ def main() -> None:
             log.error("Printer unreachable - buttons will still work once "
                       "the printer is available.")
 
+    scanner.starten(_scan_ereignis)
+
     # Last known level per pin, to detect press (HIGH->LOW) and release
     # (LOW->HIGH) transitions while polling.
     letzter_pegel = {pin: GPIO.HIGH for pin in SCHALTFLÄCHEN}
@@ -188,12 +269,23 @@ def main() -> None:
     try:
         while True:
             jetzt = time.monotonic()
+
+            if (_scan_sitzung is not None
+                    and jetzt - _scan_sitzung["letzter_scan"] >= config.SCAN_TIMEOUT_SECONDS):
+                _scan_abschliessen()
+
             for pin in SCHALTFLÄCHEN:
                 pegel = GPIO.input(pin)
                 war = letzter_pegel[pin]
                 letzter_pegel[pin] = pegel
 
                 if pegel == war:
+                    continue
+
+                if pegel == GPIO.LOW and _scan_sitzung is not None:
+                    # Any button, while a scan checkout is growing, just
+                    # ends it instead of triggering its own normal receipt.
+                    _scan_abschliessen()
                     continue
 
                 paar = _KOMBI_PIN_ZU_PAAR.get(pin)

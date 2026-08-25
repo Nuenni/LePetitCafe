@@ -38,6 +38,16 @@ PRINTER_WIDTH = 48
 # 58mm paper (mini/battery printers) -> 384.
 PRINTER_IMAGE_WIDTH_PX = 576
 
+# ─── Barcode scanner (optional) ─────────────────────────────────────────────
+# A USB handheld scanner shows up to Linux as a generic keyboard. This
+# narrows down which input device is the scanner among all others - check
+# the real name on the Pi with:  cat /proc/bus/input/devices
+SCANNER_NAME_HINT = "Barcode"
+
+# How many seconds of no further scan before the in-progress scan receipt
+# finishes and cuts on its own.
+SCAN_TIMEOUT_SECONDS = 60
+
 # ─── Buttons ──────────────────────────────────────────────────────────────
 # GPIO pin numbers (BCM numbering) of the six arcade buttons.
 # 23/24/25 are, like 17/27/22, plain GPIO pins with no special function, so
