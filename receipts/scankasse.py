@@ -40,9 +40,15 @@ def kopf(drucker, name: str, slogan: str) -> int:
 
 
 def artikel(drucker, katalog: list[tuple[str, float]]) -> tuple[str, float]:
-    """Prints one random item line. Returns (name, price) for the running total."""
+    """
+    Prints one random item line, bold and oversized - each scan should feed
+    a visibly bigger chunk of paper, not one thin line a kid can barely see
+    move. Returns (name, price) for the running total.
+    """
     name, preis = random.choice(katalog)
+    drucker.set(bold=True, double_height=True, double_width=False)
     drucker.text(layout.item(name, preis))
+    drucker.set(normal_textsize=True, bold=False, double_height=False)
     return name, preis
 
 
