@@ -45,18 +45,24 @@ _MENGEN = [1, 1, 1, 1, 1, 1, 1, 2, 2, 3]
 _ANGEBOT_CHANCE = 0.15
 _ANGEBOT_RABATT = 0.3
 
+# Each scanned item gets one of Germany's two VAT rates at random - mostly
+# 7% (food, like most of what's in these catalogs), sometimes 19% - purely
+# for receipt flavor, not derived from what the item actually is.
+_MWST_SAETZE = [7, 7, 7, 19]
 
-def artikel(drucker, katalog: list[tuple[str, float]]) -> tuple[str, float]:
+
+def artikel(drucker, katalog: list[tuple[str, float]]) -> tuple[str, float, int]:
     """
     Prints one random item line, bold and oversized - each scan should feed
     a visibly bigger chunk of paper, not one thin line a kid can barely see
     move. Sometimes more than one piece, sometimes "on sale" - just for
     variety, not tied to what was actually scanned. Returns (label, total
-    price) for the running total.
+    price, VAT rate) for the running total/breakdown.
     """
     name, preis = random.choice(katalog)
     menge = random.choice(_MENGEN)
     im_angebot = random.random() < _ANGEBOT_CHANCE
+    mwst_satz = random.choice(_MWST_SAETZE)
 
     einzelpreis = round(preis * (1 - _ANGEBOT_RABATT), 2) if im_angebot else preis
     gesamt = round(einzelpreis * menge, 2)
@@ -68,18 +74,31 @@ def artikel(drucker, katalog: list[tuple[str, float]]) -> tuple[str, float]:
 
     if im_angebot:
         alt_gesamt = round(preis * menge, 2)
-        hinweis = (f"* Angebot, statt {layout.money(alt_gesamt)} *" if config.LANGUAGE == "de"
-                   else f"* On sale, was {layout.money(alt_gesamt)} *")
+        hinweis = (f"* ANGEBOT, statt {layout.money(alt_gesamt)} *" if config.LANGUAGE == "de"
+                   else f"* ON SALE, was {layout.money(alt_gesamt)} *")
+        drucker.set(bold=True, double_height=True, double_width=False)
         drucker.text(layout.wrapped(hinweis, indent=1))
+        drucker.set(normal_textsize=True, bold=False, double_height=False)
 
-    return label, gesamt
+    return label, gesamt, mwst_satz
 
 
-def abschluss(drucker, positionen: list[tuple[str, float]], bon_nr: int) -> None:
-    """Prints the total and cuts - same closing style as the regular receipts."""
-    summe = sum(preis for _, preis in positionen)
+def abschluss(drucker, positionen: list[tuple[str, float, int]], bon_nr: int) -> None:
+    """Prints the VAT breakdown, total, and cuts - same closing style as the regular receipts."""
+    summe = sum(preis for _, preis, _ in positionen)
+
+    # Each item's price is gross (VAT already included) - back out the VAT
+    # portion per rate for the breakdown, same as the regular receipts do.
+    mwst_je_satz: dict[int, float] = {}
+    for _, preis, satz in positionen:
+        mwst_je_satz[satz] = mwst_je_satz.get(satz, 0.0) + preis - preis / (1 + satz / 100)
 
     drucker.text(layout.divider("═"))
+    for satz in sorted(mwst_je_satz):
+        label = f"darin MwSt. {satz}%" if config.LANGUAGE == "de" else f"incl. VAT {satz}%"
+        drucker.text(layout.row(label, layout.money(mwst_je_satz[satz])))
+    drucker.text(layout.divider())
+
     drucker.set(bold=True, double_height=True)
     drucker.text(layout.row("SUMME" if config.LANGUAGE == "de" else "TOTAL", layout.money(summe)))
     drucker.set(normal_textsize=True, bold=False, double_height=False)
