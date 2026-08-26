@@ -39,10 +39,11 @@ PRINTER_WIDTH = 48
 PRINTER_IMAGE_WIDTH_PX = 576
 
 # ─── Barcode scanner (optional) ─────────────────────────────────────────────
-# A USB handheld scanner shows up to Linux as a generic keyboard. This
-# narrows down which input device is the scanner among all others - check
-# the real name on the Pi with:  cat /proc/bus/input/devices
-SCANNER_NAME_HINT = "Barcode"
+# A USB handheld scanner shows up to Linux as a generic keyboard - most
+# cheap ones report a device name ending in "HID Keyboard" regardless of
+# brand. This narrows down which input device is the scanner among all
+# others. Check the real name on the Pi with:  cat /proc/bus/input/devices
+SCANNER_NAME_HINT = "HID Keyboard"
 
 # How many seconds of no further scan before the in-progress scan receipt
 # finishes and cuts on its own.
