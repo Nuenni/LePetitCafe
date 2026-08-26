@@ -113,10 +113,10 @@ Everything below plugs together — **no soldering required**.
 | Button cables | 6.3mm spade → Dupont socket, 12 pieces | ~12 € |
 | Power strip | Short 3-outlet strip, so only **one** cable leaves the box | ~8 € |
 | Enclosure | Wooden box, toolbox or 3D print | ~15 € |
-| *Optional:* USB hub | Unpowered 3-port hub, for the barcode scanner | ~10 € |
-| *Optional:* Barcode scanner | Cheap wired USB CCD scanner (HID/plug-and-play) | ~13 € |
+| *Optional:* USB hub | Unpowered 3-port hub, for the barcode scanner | ~5 € |
+| *Optional:* Barcode scanner | Cheap wired USB hand scanner (HID/plug-and-play) | ~15 € |
 
-**Total: ~150 €** — around 105 € if you find a printer with its power supply cheap. The scanner add-on is another ~20–25 €.
+**Total: ~150 €** — around 105 € if you find a printer with its power supply cheap. The scanner add-on is another ~20 €.
 
 > ⚠️ **The one mistake to avoid when buying used:** many listings ship *without* the PS-180 power supply (24V, 3-pin) — restaurants tend to keep them. Buying one separately costs 17–25 €. Always check the listing says "with power supply". Also make sure you get the **USB** variant — the TM-T20 also exists with serial and Ethernet interfaces.
 
