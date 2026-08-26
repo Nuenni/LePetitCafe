@@ -79,6 +79,22 @@ This used to encode the message as plain text directly in the QR code — no hos
 
 ---
 
+## Extras
+
+Two optional add-ons beyond the six buttons:
+
+### Ping — send a message or picture from your phone
+
+A small local web page (`ping_app.py`) lets anyone on the home WiFi print a short message — or a picture, printed in grayscale — straight onto the receipt printer, no button press needed. It's reachable at the Pi's own IP address, e.g. `http://192.168.1.42:5000`, and never leaves the home network. Runs as its own systemd service (`ping.service`) alongside the main one.
+
+### Barcode scanner checkout
+
+Plug a cheap USB barcode scanner into the Pi (through a USB hub, alongside the printer) and kids can scan any barcode on a food package to grow a receipt one item at a time, like a real checkout — paper feeds a bit further with every scan. The scanned code itself is never looked up; a random item from the Supermarket or Ice Cream Café catalog gets added instead, complete with occasional quantities, "on sale" prices, and a 7%/19% VAT breakdown at the end. The receipt finishes and cuts either after `config.SCAN_TIMEOUT_SECONDS` of no further scan, or immediately if any of the six regular buttons gets pressed.
+
+Barcode scanners show up to Linux as a generic keyboard — no drivers needed, just set `config.SCANNER_NAME_HINT` to a substring of the device's reported name (check with `cat /proc/bus/input/devices` on the Pi). Two scanners can run at once, so two kids can scan into the same growing receipt.
+
+---
+
 ## Hardware
 
 ### What you need
@@ -97,8 +113,10 @@ Everything below plugs together — **no soldering required**.
 | Button cables | 6.3mm spade → Dupont socket, 12 pieces | ~12 € |
 | Power strip | Short 3-outlet strip, so only **one** cable leaves the box | ~8 € |
 | Enclosure | Wooden box, toolbox or 3D print | ~15 € |
+| *Optional:* USB hub | Unpowered 3-port hub, for the barcode scanner | ~10 € |
+| *Optional:* Barcode scanner | Cheap wired USB CCD scanner (HID/plug-and-play) | ~13 € |
 
-**Total: ~150 €** — around 105 € if you find a printer with its power supply cheap.
+**Total: ~150 €** — around 105 € if you find a printer with its power supply cheap. The scanner add-on is another ~20–25 €.
 
 > ⚠️ **The one mistake to avoid when buying used:** many listings ship *without* the PS-180 power supply (24V, 3-pin) — restaurants tend to keep them. Buying one separately costs 17–25 €. Always check the listing says "with power supply". Also make sure you get the **USB** variant — the TM-T20 also exists with serial and Ethernet interfaces.
 
@@ -296,10 +314,14 @@ Le Petit Café now starts automatically every time the Pi is powered on.
 
 ```
 LePetitCafe/
-├── main.py                  # GPIO listener, print dispatcher
-├── config.py                # ← Printer, GPIO pins, language
+├── main.py                  # GPIO listener, print dispatcher, scan-checkout state
+├── printer.py               # Shared printer connection (USB/serial/network)
+├── scanner.py                # Barcode scanner input, via evdev
+├── ping_app.py               # Ping web page (Flask)
+├── ping.service               # systemd unit for the Ping web page
+├── config.py                # ← Printer, GPIO pins, language, scanner
 ├── config_local.py.example  # ← Template for personal settings (gitignored)
-├── requirements.txt         # python-escpos, RPi.GPIO
+├── requirements.txt         # python-escpos, RPi.GPIO, Flask, Pillow, evdev
 ├── setup.sh                 # One-time setup script
 ├── lepetitcafe.service      # systemd unit for autostart
 ├── test_receipts.py         # Checks every receipt fits the paper width
@@ -317,6 +339,9 @@ LePetitCafe/
 └── receipts/
     ├── layout.py            # Width-aware line layout (58mm / 80mm)
     ├── kaffeepause.py       # Private easter-egg receipt (see config.COFFEE_*)
+    ├── rezeptideen.py       # Private easter-egg receipt (see config.RECIPE_COMBO)
+    ├── ping.py              # Ping message/picture receipt
+    ├── scankasse.py         # Barcode scanner checkout receipt (header/item/total)
     ├── supermarkt.py        # 🇩🇪 PETIT MARCHÉ
     ├── eiscafe.py           # 🇩🇪 LE PETIT CAFÉ
     ├── restaurant.py        # 🇩🇪 LE PETIT BISTRO
