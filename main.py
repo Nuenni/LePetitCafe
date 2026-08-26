@@ -265,6 +265,10 @@ def main() -> None:
     # (so releasing the second button of a triggered pair doesn't double-print).
     combo_gehalten_seit: dict[int, float] = {}
     combo_ausgeloest: dict[tuple, bool] = {}
+    # Pins whose press just ended a scan checkout - the matching release
+    # needs to be swallowed too, or it falls through to the combo/knopf
+    # logic below and prints that button's own receipt as well.
+    scan_konsumierte_pins: set[int] = set()
 
     try:
         while True:
@@ -282,10 +286,19 @@ def main() -> None:
                 if pegel == war:
                     continue
 
+                if pin in scan_konsumierte_pins:
+                    # This pin's press already ended a scan checkout - swallow
+                    # the matching release too, instead of letting it fall
+                    # through to the combo/knopf logic as an ordinary press.
+                    if pegel == GPIO.HIGH:
+                        scan_konsumierte_pins.discard(pin)
+                    continue
+
                 if pegel == GPIO.LOW and _scan_sitzung is not None:
                     # Any button, while a scan checkout is growing, just
                     # ends it instead of triggering its own normal receipt.
                     _scan_abschliessen()
+                    scan_konsumierte_pins.add(pin)
                     continue
 
                 paar = _KOMBI_PIN_ZU_PAAR.get(pin)
