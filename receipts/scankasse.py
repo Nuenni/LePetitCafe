@@ -39,17 +39,40 @@ def kopf(drucker, name: str, slogan: str) -> int:
     return bon_nr
 
 
+# Odds a scanned item comes with more than 1 piece, and odds it's "on sale" -
+# just for variety on the receipt, not tied to anything real.
+_MENGEN = [1, 1, 1, 1, 1, 1, 1, 2, 2, 3]
+_ANGEBOT_CHANCE = 0.15
+_ANGEBOT_RABATT = 0.3
+
+
 def artikel(drucker, katalog: list[tuple[str, float]]) -> tuple[str, float]:
     """
     Prints one random item line, bold and oversized - each scan should feed
     a visibly bigger chunk of paper, not one thin line a kid can barely see
-    move. Returns (name, price) for the running total.
+    move. Sometimes more than one piece, sometimes "on sale" - just for
+    variety, not tied to what was actually scanned. Returns (label, total
+    price) for the running total.
     """
     name, preis = random.choice(katalog)
+    menge = random.choice(_MENGEN)
+    im_angebot = random.random() < _ANGEBOT_CHANCE
+
+    einzelpreis = round(preis * (1 - _ANGEBOT_RABATT), 2) if im_angebot else preis
+    gesamt = round(einzelpreis * menge, 2)
+    label = f"{menge}x {name}" if menge > 1 else name
+
     drucker.set(bold=True, double_height=True, double_width=False)
-    drucker.text(layout.item(name, preis))
+    drucker.text(layout.item(label, gesamt))
     drucker.set(normal_textsize=True, bold=False, double_height=False)
-    return name, preis
+
+    if im_angebot:
+        alt_gesamt = round(preis * menge, 2)
+        hinweis = (f"* Angebot, statt {layout.money(alt_gesamt)} *" if config.LANGUAGE == "de"
+                   else f"* On sale, was {layout.money(alt_gesamt)} *")
+        drucker.text(layout.wrapped(hinweis, indent=1))
+
+    return label, gesamt
 
 
 def abschluss(drucker, positionen: list[tuple[str, float]], bon_nr: int) -> None:
